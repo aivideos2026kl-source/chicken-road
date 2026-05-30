@@ -152,7 +152,8 @@
                 <div id="user-balance">100</div> <span>🪙</span>
             </div>
             <div class="nav-menu">
-                <button class="nav-item" onclick="openMenu('settings')">⚙️</button>
+                <button class="nav-item" onclick="openMenu
+('settings')">⚙️</button>
                 <button class="nav-item" onclick="openMenu('wallet')">👛</button>
             </div>
         </div>
