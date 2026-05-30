@@ -1,195 +1,27 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Chicken Road</title>
-    <!-- Telegram WebApp Script integrieren -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #222;
-            color: white;
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            overflow: hidden;
-        }
-        #ui {
-            margin-bottom: 10px;
-            font-size: 20px;
-            font-weight: bold;
-        }
-        canvas {
-            background-color: #444; /* Standard-Straße */
-            border: 2px solid #555;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            max-width: 100%;
-            max-height: 70vh;
-        }
-        #controls {
-            margin-top: 15px;
-            display: grid;
-            grid-template-columns: repeat(3, 70px);
-            grid-gap: 10px;
-        }
-        .btn {
-            background-color: #0088cc;
-            color: white;
-            border: none;
-            padding: 15px;
-            font-size: 20px;
-            font-weight: bold;
-            border-radius: 10px;
-            text-align: center;
-            user-select: none;
-        }
-        .btn:active {
-            background-color: #006699;
-        }
-        .empty { visibility: hidden; }
-    </style>
-</head>
-<body>
-
-    <div id="ui">Münzen: <span id="score">0</span></div>
-    <canvas id="gameCanvas" width="400" height="400"></canvas>
-
-    <!-- Mobile Touch-Steuerung für das Handy -->
-    <div id="controls">
-        <div class="btn empty"></div>
-        <button class="btn" onclick="moveChicken(0, -20)">▲</button>
-        <div class="btn empty"></div>
-        <button class="btn" onclick="moveChicken(-20, 0)">◀</button>
-        <button class="btn" onclick="moveChicken(0, 20)">▼</button>
-        <button class="btn" onclick="moveChicken(20, 0)">▶</button>
-    </div>
-
-    <script>
-        // Telegram initialisieren und im Vollbild öffnen
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
-
-        let score = 0;
-
-        // Huhn-Objekt (Der Spieler)
-        const chicken = {
-            x: 200,
-            y: 360,
-            width: 20,
-            height: 20,
-            color: "#FFD700" // Goldgelb
-        };
-
-        // Hindernisse (Autos)
-        const cars = [
-            { x: 0, y: 100, width: 40, height: 20, speed: 3, color: "#FF3333" },
-            { x: 200, y: 160, width: 50, height: 20, speed: -2.5, color: "#3388FF" },
-            { x: 100, y: 220, width: 40, height: 20, speed: 4, color: "#33FF33" },
-            { x: 300, y: 280, width: 60, height: 20, speed: -2, color: "#E033FF" }
-        ];
-
-        // Münze zum Einsammeln
-        const coin = {
-            x: Math.random() * (canvas.width - 20),
-            y: 50,
-            width: 15,
-            height: 15,
-            color: "#FFEA00"
-        };
-
-        // Huhn bewegen
-        function moveChicken(dx, dy) {
-            chicken.x += dx;
-            chicken.y += dy;
-
-            // Grenzen checken
-            if (chicken.x < 0) chicken.x = 0;
-            if (chicken.x > canvas.width - chicken.width) chicken.x = canvas.width - chicken.width;
-            if (chicken.y < 0) chicken.y = 0;
-            if (chicken.y > canvas.height - chicken.height) chicken.y = canvas.height - chicken.height;
-        }
-
-        // Kollisionsabfrage
-        function checkCollision(rect1, rect2) {
-            return rect1.x < rect2.x + rect2.width &&
-                   rect1.x + rect1.width > rect2.x &&
-                   rect1.y < rect2.y + rect2.height &&
-                   rect1.y + rect1.height > rect2.y;
-        }
-
-        // Spiel zurücksetzen bei Crash
-        function resetGame() {
-            chicken.x = 200;
-            chicken.y = 360;
-        }
-
-        // Neue Position für die Münze generieren
-        function respawnCoin() {
-            coin.x = Math.random() * (canvas.width - 20);
-            coin.y = 40 + Math.random() * 280; // Verteilt auf den Straßenbereich
-        }
-
-        // Haupt-Spielschleife (Game Loop)
-        function update() {
-            // Hintergrund zeichnen
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Gras-Zonen (Start und Ziel)
-            ctx.fillStyle = "#2ecc71";
-            ctx.fillRect(0, 0, canvas.width, 40);
-            ctx.fillRect(0, 340, canvas.width, 60);
-
-            // Münze zeichnen
-            ctx.fillStyle = coin.color;
-            ctx.beginPath();
-            ctx.arc(coin.x + 7.5, coin.y + 7.5, 8, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Huhn zeichnen
-            ctx.fillStyle = chicken.color;
-            ctx.fillRect(chicken.x, chicken.y, chicken.width, chicken.height);
-
-            // Autos bewegen und zeichnen
-            cars.forEach(car => {
-                car.x += car.speed;
-
-                // Wenn Auto den Bildschirm verlässt, auf der anderen Seite wieder reinlassen
-                if (car.speed > 0 && car.x > canvas.width) car.x = -car.width;
-                if (car.speed < 0 && car.x < -car.width) car.x = canvas.width;
-
-                ctx.fillStyle = car.color;
-                ctx.fillRect(car.x, car.y, car.width, car.height);
-
-                // Kollision mit Auto prüfen
-                if (checkCollision(chicken, car)) {
-                    resetGame();
-                    // Telegram-Vibration auslösen (falls auf dem Handy gespielt wird)
-                    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
-                }
-            });
-
-            // Kollision mit Münze prüfen
-            if (checkCollision(chicken, coin)) {
-                score++;
-                document.getElementById("score").innerText = score;
-                respawnCoin();
-                if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred("medium");
+}
             }
-
-            requestAnimationFrame(update);
+            tg.HapticFeedback.impactOccurred("medium");
         }
 
-        // Spiel starten
-        update();
+        function cashOut() {
+            if(gameActive && currentProfit > 0) {
+                alert("Erfolgreich ausgezahlt: " + currentProfit.toFixed(2) + " USD");
+                // Hier würde der Gewinn wieder in Münzen oder Guthaben umgerechnet
+                gameActive = false;
+                currentProfit = 0;
+                document.getElementById('win-amount').innerText = "0.00 USD";
+                tg.HapticFeedback.notificationOccurred("success");
+            }
+        }
+
+        function setLanguage(lang) {
+            alert("Sprache geändert auf: " + lang);
+            closeMenus();
+        }
+
+        function buyCoins(amount, price) {
+            alert("Du kaufst " + amount + " Münzen für " + price + "€. Hier binden wir als nächstes Telegram Stars ein.");
+        }
     </script>
 </body>
 </html>
