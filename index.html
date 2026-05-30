@@ -1,0 +1,27 @@
+}
+            }
+            tg.HapticFeedback.impactOccurred("medium");
+        }
+
+        function cashOut() {
+            if(gameActive && currentProfit > 0) {
+                alert("Erfolgreich ausgezahlt: " + currentProfit.toFixed(2) + " USD");
+                // Hier würde der Gewinn wieder in Münzen oder Guthaben umgerechnet
+                gameActive = false;
+                currentProfit = 0;
+                document.getElementById('win-amount').innerText = "0.00 USD";
+                tg.HapticFeedback.notificationOccurred("success");
+            }
+        }
+
+        function setLanguage(lang) {
+            alert("Sprache geändert auf: " + lang);
+            closeMenus();
+        }
+
+        function buyCoins(amount, price) {
+            alert("Du kaufst " + amount + " Münzen für " + price + "€. Hier binden wir als nächstes Telegram Stars ein.");
+        }
+    </script>
+</body>
+</html>
