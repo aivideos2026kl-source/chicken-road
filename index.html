@@ -1,205 +1,160 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coin Flip - Dynamische Codes</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Krypto-Bibliothek für die Code-Berechnung laden -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    <style>
-        * { box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: #131926;
-            color: #ffffff;
-            margin: 0;
-            padding: 0;
-            text-align: center;
+const tg = window.Telegram.WebApp;
+if (tg) tg.expand();
+
+// 1. DEIN GEHEIMES MASTER-WORT (Ändere das in dein privates Wort!)
+const SECRET_SALT = "MEIN_SUPER_GEHEIMES_WORT_123"; 
+
+// 2. DEIN ECHTER TELEGRAM-BENUTZERNAME (Ohne das @-Zeichen!)
+const ADMIN_USERNAME = "DEIN_TELEGRAM_NAME"; 
+
+let coins = parseInt(localStorage.getItem('m_coins')) || 0;
+let euros = parseFloat(localStorage.getItem('m_euros')) || 0.00;
+let selectedChoice = null;
+let isFlipsRunning = false;
+
+function updateUI() {
+    document.querySelectorAll('.coin-display').forEach(el => el.innerText = coins);
+    document.querySelectorAll('.euro-display').forEach(el => el.innerText = euros.toFixed(2));
+    localStorage.setItem('m_coins', coins);
+    localStorage.setItem('m_euros', euros);
+    
+    const playBtn = document.getElementById('play-button');
+    if (coins > 0 && selectedChoice !== null && !isFlipsRunning) {
+        playBtn.disabled = false;
+    } else {
+        playBtn.disabled = true;
+    }
+}
+
+function switchTab(tab) {
+    document.getElementById('tab-game').classList.toggle('active', tab === 'game');
+    document.getElementById('tab-shop').classList.toggle('active', tab === 'shop');
+    document.getElementById('section-game').classList.toggle('active', tab === 'game');
+    document.getElementById('section-shop').classList.toggle('active', tab === 'shop');
+}
+
+function selectChoice(choice) {
+    if (isFlipsRunning) return;
+    selectedChoice = choice;
+    document.getElementById('btn-head').classList.toggle('selected', choice === 'Kopf');
+    document.getElementById('btn-tail').classList.toggle('selected', choice === 'Zahl');
+    updateUI();
+}
+
+function flipCoin() {
+    if (coins < 1 || selectedChoice === null || isFlipsRunning) return;
+    isFlipsRunning = true;
+    coins--;
+    updateUI();
+    const coinElement = document.getElementById('coin-element');
+    coinElement.className = 'coin';
+    const result = Math.random() < 0.5 ? 'Kopf' : 'Zahl';
+    setTimeout(() => {
+        if (result === 'Kopf') coinElement.classList.add('animate-head');
+        else coinElement.classList.add('animate-tail');
+    }, 50);
+    setTimeout(() => {
+        isFlipsRunning = false;
+        if (selectedChoice === result) {
+            euros += 2.00;
+            tg.showAlert(`🎉 Richtig! Es ist ${result}. +2,00 €!`);
+        } else {
+            tg.showAlert(`❌ Schade! Es ist ${result}.`);
         }
-        .header {
-            background: linear-gradient(135deg, #1e293b, #0f172a);
-            padding: 20px 15px;
-            border-bottom: 2px solid #334155;
-        }
-        h1 { margin: 0; font-size: 22px; color: #38bdf8; }
-        
-        .balance-container {
-            display: flex;
-            justify-content: space-around;
-            background: #1e293b;
-            padding: 15px;
-            margin: 20px 15px;
-            border-radius: 12px;
-            border: 1px solid #334155;
-        }
-        .balance-label { font-size: 12px; color: #94a3b8; text-transform: uppercase; }
-        .balance-value { font-size: 24px; font-weight: bold; margin-top: 5px; }
-        .color-coins { color: #f59e0b; }
-        .color-euro { color: #22c55e; }
-
-        .info-box {
-            background: rgba(30, 41, 59, 0.5);
-            border: 1px solid #334155;
-            border-radius: 12px;
-            padding: 15px;
-            text-align: left;
-            margin: 0 15px 20px 15px;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-        .btn-contact {
-            background: #0088cc;
-            color: white;
-            border: none;
-            padding: 12px;
-            width: 100%;
-            border-radius: 10px;
-            font-weight: bold;
-            cursor: pointer;
-            text-decoration: none;
-            display: block;
-            text-align: center;
-            margin-top: 10px;
-        }
-        
-        .code-input-group {
-            background: #1e293b;
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid #334155;
-            margin: 25px 15px;
-        }
-        .code-input-group input {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #334155;
-            background: #0f172a;
-            color: white;
-            font-size: 16px;
-            text-align: center;
-            margin-bottom: 12px;
-            text-transform: uppercase;
-        }
-        .btn-redeem {
-            background: #22c55e;
-            color: white;
-            border: none;
-            padding: 12px;
-            width: 100%;
-            border-radius: 10px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
-
-    <div class="header">
-        <h1>Coin Flip - Premium</h1>
-    </div>
-
-    <div class="balance-container">
-        <div>
-            <div class="balance-label">Münzen</div>
-            <div class="balance-value color-coins"><span id="coin-balance">0</span> 🪙</div>
-        </div>
-        <div style="border-left: 1px solid #334155; padding-left: 20px;">
-            <div class="balance-label">Guthaben</div>
-            <div class="balance-value color-euro"><span id="euro-balance">0.00</span> €</div>
-        </div>
-    </div>
-
-    <div class="info-box">
-        <strong>Münzen aufladen:</strong><br>
-        Schreib mir privat, bezahle dein Paket und du erhältst deinen persönlichen Tages-Code!
-        <a href="https://t.me/dein_telegram_name" target="_blank" class="btn-contact">💬 Jetzt privat kaufen</a>
-    </div>
-
-    <div class="code-input-group">
-        <label style="display:block; margin-bottom: 8px; font-weight: bold;">Gutscheincode eingeben:</label>
-        <input type="text" id="coupon-code" placeholder="Z.B. T10-A8F3BC">
-        <button class="btn-redeem" onclick="redeemDynamicCode()">Code aktivieren</button>
-    </div>
-
-    <script>
-        const tg = window.Telegram.WebApp;
-        if (tg) tg.expand();
-
-        // 1. DEIN GEHEIMES MASTER-WORT (Ändere das in ein langes, geheimes Wort!)
-        const SECRET_SALT = "MEIN_SUPER_GEHEIMES_WORT_123";
-
-        let coins = parseInt(localStorage.getItem('m_coins')) || 0;
-        let euros = parseFloat(localStorage.getItem('m_euros')) || 0.00;
-
-        function updateUI() {
-            document.getElementById('coin-balance').innerText = coins;
-            document.getElementById('euro-balance').innerText = euros.toFixed(2);
-            localStorage.setItem('m_coins', coins);
-            localStorage.setItem('m_euros', euros);
-        }
-
-        // HIER PASSIERT DIE MAGIE: Generierung des tagesaktuellen Codes für eine bestimmte Münzanzahl
-        function getValidCodeForToday(coinAmount) {
-            // Holt das aktuelle Datum im Format YYYY-MM-DD (z.B. "2026-05-31")
-            const todayStr = new Date().toISOString().slice(0, 10);
-            
-            // Kombiniert das Datum, die Münzanzahl und dein geheimes Wort
-            const rawString = todayStr + "-" + coinAmount + "-" + SECRET_SALT;
-            
-            // Erstellt daraus einen kryptografischen Hash (MD5) und nimmt die ersten 6 Zeichen
-            const hash = CryptoJS.MD5(rawString).toString().substring(0, 6).toUpperCase();
-            
-            // Das fertige Code-Format ist dann z.B.: T10-A8F3BC (für 10 Münzen)
-            return `T${coinAmount}-${hash}`;
-        }
-
-        function redeemDynamicCode() {
-            const inputField = document.getElementById('coupon-code');
-            const enteredCode = inputField.value.trim().toUpperCase();
-
-            if (enteredCode === "") {
-                tg.showAlert("Bitte gib einen Code ein!");
-                return;
-            }
-
-            // Wir prüfen die gängigsten Paketgrößen: 5, 10, 20, 50, 100 Münzen
-            const pakete = [5, 10, 20, 50, 100];
-            let codeGueltig = false;
-            let gutgeschriebeneMuenzen = 0;
-
-            for (let amt of pakete) {
-                const richtigerCode = getValidCodeForToday(amt);
-                
-                if (enteredCode === richtigerCode) {
-                    // Prüfen, ob DIESER spezifische Tages-Code heute schon mal auf DIESEM Handy benutzt wurde
-                    if (localStorage.getItem('used_code_' + richtigerCode)) {
-                        tg.showAlert("❌ Du hast diesen Code heute bereits eingelöst!");
-                        return;
-                    }
-
-                    codeGueltig = true;
-                    gutgeschriebeneMuenzen = amt;
-                    
-                    // Code für dieses Handy als "benutzt" markieren
-                    localStorage.setItem('used_code_' + richtigerCode, 'true');
-                    break;
-                }
-            }
-
-            if (codeGueltig) {
-                coins += gutgeschriebeneMuenzen;
-                updateUI();
-                tg.showAlert(`✅ Erfolg! Dir wurden ${gutgeschriebeneMuenzen} Münzen gutgeschrieben.`);
-                inputField.value = "";
-            } else {
-                tg.showAlert("❌ Ungültiger, abgelaufener oder falscher Code!");
-            }
-        }
-
-        // Initialisierung
         updateUI();
-    </script>
-</body>
-</html>
+    }, 1550);
+}
+
+// NEUE RECHEN-LOGIK: Berechnet Code aus Datum + Münzen + KäuferNummer + Passwort
+function generateUniqueCode(coinAmount, buyerNo) {
+    const todayStr = new Date().toISOString().slice(0, 10); // "2026-05-31"
+    const rawString = todayStr + "-" + coinAmount + "-" + buyerNo + "-" + SECRET_SALT;
+    const hash = CryptoJS.MD5(rawString).toString().substring(0, 6).toUpperCase();
+    return `T${coinAmount}-${buyerNo}-${hash}`;
+}
+
+// GEHEIMER ADMIN BEREICH MIT LIVE-GENERATOR
+function checkAdminStatus() {
+    const user = tg.initDataUnsafe?.user;
+    
+    if (user && user.username === ADMIN_USERNAME) {
+        const adminBox = document.createElement('div');
+        adminBox.style.background = '#3b82f6'; adminBox.style.color = 'white';
+        adminBox.style.padding = '15px'; adminBox.style.margin = '15px';
+        adminBox.style.borderRadius = '12px'; adminBox.style.textAlign = 'left';
+        adminBox.style.fontSize = '14px';
+        
+        adminBox.innerHTML = `
+            <strong style="color: #fef08a;">🛠️ Live Code-Generator (Nur für dich):</strong><br>
+            <p style="margin: 5px 0;">Gib eine beliebige Käufer-Nummer ein (z.B. 1, 2, 3...):</p>
+            <input type="number" id="admin-buyer-input" value="1" style="width: 70px; padding: 5px; border-radius: 5px; border: none; text-align: center; font-weight: bold;">
+            <button onclick="refreshAdminCodes()" style="padding: 5px 10px; background: #22c55e; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">Codes anzeigen</button>
+            
+            <div id="admin-codes-output" style="margin-top: 12px; line-height: 1.6;">
+                <!-- Hier erscheinen die Codes -->
+            </div>
+        `;
+        document.body.insertBefore(adminBox, document.body.firstChild);
+        refreshAdminCodes(); // Erste Anzeige laden
+    }
+}
+
+// Aktualisiert die Anzeige der Admin-Codes, wenn du die Nummer änderst
+window.refreshAdminCodes = function() {
+    const buyerNo = document.getElementById('admin-buyer-input').value || "1";
+    const output = document.getElementById('admin-codes-output');
+    
+    output.innerHTML = `
+        • 5 Münzen: <code style="background:#1e293b; padding: 2px 6px; border-radius: 4px;">${generateUniqueCode(5, buyerNo)}</code><br>
+        • 10 Münzen: <code style="background:#1e293b; padding: 2px 6px; border-radius: 4px;">${generateUniqueCode(10, buyerNo)}</code><br>
+        • 20 Münzen: <code style="background:#1e293b; padding: 2px 6px; border-radius: 4px;">${generateUniqueCode(20, buyerNo)}</code><br>
+        • 50 Münzen: <code style="background:#1e293b; padding: 2px 6px; border-radius: 4px;">${generateUniqueCode(50, buyerNo)}</code><br>
+        • 100 Münzen: <code style="background:#1e293b; padding: 2px 6px; border-radius: 4px;">${generateUniqueCode(100, buyerNo)}</code>
+    `;
+}
+
+// CODE EINLÖSEN (Prüft Käufer-Nummern von 1 bis 200)
+function redeemDynamicCode() {
+    const inputField = document.getElementById('coupon-code');
+    const enteredCode = inputField.value.trim().toUpperCase();
+
+    if (enteredCode === "") return;
+
+    const pakete = [5, 10, 20, 50, 100];
+    let codeGueltig = false;
+    let gutgeschriebeneMuenzen = 0;
+    let gefundenerCode = "";
+
+    // Das System testet im Hintergrund, ob der eingegebene Code zu einer Käufer-Nummer zwischen 1 und 200 passt
+    for (let amt of pakete) {
+        for (let bNo = 1; bNo <= 200; bNo++) {
+            const pruefCode = generateUniqueCode(amt, bNo);
+            
+            if (enteredCode === pruefCode) {
+                if (localStorage.getItem('used_code_' + pruefCode)) {
+                    tg.showAlert("❌ Dieser Code wurde bereits eingelöst!");
+                    return;
+                }
+                codeGueltig = true;
+                gutgeschriebeneMuenzen = amt;
+                gefundenerCode = pruefCode;
+                break;
+            }
+        }
+        if (codeGueltig) break;
+    }
+
+    if (codeGueltig) {
+        coins += gutgeschriebeneMuenzen;
+        updateUI();
+        localStorage.setItem('used_code_' + gefundenerCode, 'true');
+        tg.showAlert(`✅ Erfolg! +${gutgeschriebeneMuenzen} Münzen.`);
+        inputField.value = "";
+    } else {
+        tg.showAlert("❌ Falscher, bereits benutzter oder abgelaufener Code!");
+    }
+}
+
+// Init
+updateUI();
+checkAdminStatus();
