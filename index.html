@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chicken Road - Premium Edition</title>
+    <title>Chicken Road - Perfekte Version</title>
     <style>
         :root {
             --bg-dark: #0f0b1e;
@@ -66,7 +66,6 @@
             font-size: 0.85rem;
             font-weight: bold;
         }
-        .nav-btn:hover { background: #35296a; }
 
         /* --- SPIELFELD --- */
         .game-view {
@@ -78,7 +77,7 @@
         }
 
         .farm-side {
-            width: 120px;
+            width: 100px;
             background: #2e7d32; 
             position: relative;
             border-right: 4px solid #5d4037;
@@ -86,14 +85,16 @@
             flex-shrink: 0;
         }
 
+        /* Das Huhn - zentriert sich dank Flexbox im Gully perfekt */
         .chicken {
             position: absolute;
-            left: 75px;
+            left: 55px;
             top: 50%;
             transform: translateY(-50%);
             font-size: 2.2rem;
             z-index: 10;
-            transition: left 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            pointer-events: none;
         }
 
         .road-side {
@@ -110,8 +111,8 @@
         .road-container-scroll {
             display: flex;
             align-items: center;
-            padding-left: 20px;
-            padding-right: 200px;
+            padding-left: 30px;
+            padding-right: 250px;
             height: 100%;
             position: relative;
         }
@@ -126,12 +127,12 @@
 
         /* Gullydeckel */
         .gully-tile {
-            width: 65px;
-            height: 65px;
+            width: 70px;
+            height: 70px;
             background: radial-gradient(circle, #424242 0%, #212121 100%);
             border: 4px solid #111;
             border-radius: 50%;
-            margin-right: 30px;
+            margin-right: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -142,39 +143,37 @@
             position: relative;
             z-index: 6;
             flex-shrink: 0;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
         .gully-tile.active-step {
             border-color: var(--gold);
             box-shadow: 0 0 12px var(--gold);
         }
 
-        /* Verwandlung in Goldmünze nach Sprung */
+        /* Exakte Verwandlung in Goldmünze */
         .gully-tile.safe-coin {
             background: radial-gradient(circle, #ffee55 0%, #fbc02d 100%);
             border-color: #fff;
-            transform: scale(1.05);
         }
         .gully-tile.safe-coin::after {
             content: '🪙';
-            font-size: 2rem;
+            font-size: 2.2rem;
             position: absolute;
-            animation: coinPop 0.3s ease-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
         }
 
-        @keyframes coinPop {
-            0% { transform: scale(0); }
-            100% { transform: scale(1); }
-        }
-
-        /* Hindernis: Autos fahren jetzt langsam von oben nach unten */
+        /* Langsame Autos von oben */
         .car-obstacle {
             position: absolute;
             font-size: 2.4rem;
             z-index: 12;
-            transform: rotate(180deg); /* Nach unten gerichtet */
+            transform: rotate(180deg);
             top: -60px;
-            transition: top 2.5s linear; /* Langsame, gleichmäßige Fahrt */
+            transition: top 2.0s linear; /* Langsame, flüssige Fahrt */
         }
 
         /* --- STEUERUNG --- */
@@ -234,7 +233,7 @@
             color: #fff;
         }
 
-        /* --- OVERLAYS (SHOP / INLINE-MENÜS) --- */
+        /* --- OVERLAYS --- */
         .overlay-screen {
             position: absolute;
             top: 55px; left: 0; right: 0; bottom: 0;
@@ -243,7 +242,6 @@
             padding: 20px;
             display: none;
             flex-direction: column;
-            overflow-y: auto;
         }
         .overlay-header {
             display: flex;
@@ -253,36 +251,7 @@
             padding-bottom: 10px;
             margin-bottom: 15px;
         }
-        .close-btn {
-            background: none; border: none; color: #ff3333; font-size: 1.5rem; cursor: pointer;
-        }
-
-        /* Shop Items */
-        .shop-item {
-            background: #1c153a;
-            border: 1px solid #3c326d;
-            border-radius: 8px;
-            padding: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .paypal-fake-btn {
-            background: #0070ba;
-            color: white;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 4px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .paypal-fake-btn:hover { background: #005ea6; }
-
-        .settings-section {
-            margin-bottom: 20px;
-        }
-        .settings-section h4 { margin: 0 0 8px 0; color: var(--text-muted); }
+        .close-btn { background: none; border: none; color: #ff3333; font-size: 1.5rem; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -292,10 +261,10 @@
         <!-- NAVIGATION -->
         <div class="top-nav">
             <div style="font-weight: bold; display: flex; align-items: center; gap: 5px;">
-                <span>🪙</span> <span id="balance-coins">100</span> Münzen
+                <span>🪙</span> <span id="balance-coins">150</span> Test-Münzen
             </div>
             <div class="nav-buttons">
-                <button class="nav-btn" onclick="openOverlay('shop-overlay')">🛒 Shop</button>
+                <button class="nav-btn" onclick="openOverlay('shop-overlay')">🛒 Gratis Shop</button>
                 <button class="nav-btn" onclick="openOverlay('settings-overlay')">⚙️ Menü</button>
             </div>
         </div>
@@ -313,11 +282,11 @@
         <!-- STEUERUNG -->
         <div class="control-panel">
             <div class="stats-bar">
-                <div>Einsatz: <span class="stat-val" id="display-bet">10.00</span> Münzen</div>
-                <div>Gewinnlauf: <span class="stat-val" id="display-win">0.00</span> €</div>
+                <div>Kosten: <span class="stat-val">10 Münzen</span></div>
+                <div>Gewinn: <span class="stat-val" id="display-win">0.00</span> € (Test)</div>
             </div>
 
-            <!-- Dieses Feld bleibt immer als Einsatz-Button sichtbar -->
+            <!-- Haupt-Aktionsbereich -->
             <div id="action-area">
                 <button id="btn-action" class="action-button btn-green-main" onclick="startRound()">Runde starten</button>
             </div>
@@ -328,68 +297,39 @@
             </div>
         </div>
 
-        <!-- SHOP OVERLAY -->
+        <!-- GRATIS SHOP OVERLAY -->
         <div id="shop-overlay" class="overlay-screen">
             <div class="overlay-header">
-                <h3>🛒 Münzen-Shop (PayPal)</h3>
+                <h3>🛒 Gratis Münzen aufladen (0 €)</h3>
                 <button class="close-btn" onclick="closeOverlays()">×</button>
             </div>
-            <p style="font-size: 0.85rem; color: var(--text-muted);">Münzen werden sofort nach Zahlung gutgeschrieben.</p>
-            
-            <div class="shop-item">
-                <div><strong>50 Münzen</strong><br><small>Preis: 5,00 EUR</small></div>
-                <button class="paypal-fake-btn" onclick="buyCoins(50, 5.00)">Mit PayPal</button>
-            </div>
-            <div class="shop-item">
-                <div><strong>120 Münzen</strong> <span style="color: var(--gold); font-size: 0.75rem;">+20%</span><br><small>Preis: 10,00 EUR</small></div>
-                <button class="paypal-fake-btn" onclick="buyCoins(120, 10.00)">Mit PayPal</button>
-            </div>
-            <div class="shop-item">
-                <div><strong>300 Münzen</strong> <span style="color: var(--gold); font-size: 0.75rem;">Mega-Pack</span><br><small>Preis: 25,00 EUR</small></div>
-                <button class="paypal-fake-btn" onclick="buyCoins(300, 25.00)">Mit PayPal</button>
-            </div>
+            <p>Hier kannst du dein Testguthaben komplett kostenlos aufladen!</p>
+            <button class="action-button btn-green-main" onclick="freeRefill()" style="margin-top: 20px;">+100 Gratis-Münzen holen</button>
         </div>
 
-        <!-- EINSTELLUNGEN & SUPPORT OVERLAY -->
+        <!-- MENÜ OVERLAY -->
         <div id="settings-overlay" class="overlay-screen">
             <div class="overlay-header">
-                <h3>⚙️ Einstellungen & Support</h3>
+                <h3>⚙️ Menü & Support</h3>
                 <button class="close-btn" onclick="closeOverlays()">×</button>
             </div>
-            
-            <div class="settings-section">
-                <h4>🌐 Sprache / Language</h4>
-                <select style="width:100%; padding:8px; background:#271e4f; color:#fff; border:1px solid #3c326d; border-radius:4px;">
-                    <option>Deutsch (DE)</option>
-                    <option>English (EN)</option>
-                    <option>Türkçe (TR)</option>
-                </select>
-            </div>
-
-            <div class="settings-section">
-                <h4>💳 Wallet Einrichtung</h4>
-                <input type="text" placeholder="Deine Krypto- oder Auszahlungsadresse" style="width:95%; padding:8px; background:#271e4f; color:#fff; border:1px solid #3c326d; border-radius:4px;">
-                <button class="nav-btn" style="margin-top:5px; width:100%;">Speichern</button>
-            </div>
-
-            <div class="settings-section" style="background: #1c153a; padding: 12px; border-radius: 8px;">
-                <h4>📢 Live-Support</h4>
-                <p style="font-size:0.85rem; margin: 0 0 10px 0;">Probleme mit der Einzahlung? Kontaktiere uns direkt via Telegram:</p>
-                <a href="https://t.me/DeinSupportBot" target="_blank" style="color: var(--btn-green); font-weight: bold; text-decoration: none;">👉 @DeinSupportBot</a>
-            </div>
+            <p><strong>Sprache:</strong> Deutsch</p>
+            <p><strong>Support:</strong> @DeinTelegramBot</p>
+            <p style="color: var(--text-muted); font-size: 0.85rem;">Das Spiel läuft im kostenlosen Demomodus.</p>
         </div>
 
     </div>
 
     <script>
-        let coins = 100;
-        let gameMode = 'manual'; // manual oder auto
+        let coins = 150;
+        let gameMode = 'manual'; 
         let isGameRunning = false;
         let currentStep = 0;
         let maxSteps = 10;
         let earnedMoney = 0.00;
-        let betCostInCoins = 10; // Eine Runde kostet 10 Münzen
+        let betCostInCoins = 10; 
         let minePositions = [];
+        let autoTimer = null;
 
         const multipliers = [1.05, 1.15, 1.25, 1.40, 1.60, 1.90, 2.30, 2.80, 3.50, 5.00];
 
@@ -398,14 +338,13 @@
         const tilesContainer = document.getElementById('tiles-container');
         const balanceCoinsDisplay = document.getElementById('balance-coins');
         const displayWin = document.getElementById('display-win');
-        const btnAction = document.getElementById('btn-action');
 
         function generateRoad() {
             tilesContainer.innerHTML = '';
-            for(let i = 1; i <= 4; i++) {
+            for(let i = 1; i <= 5; i++) {
                 const line = document.createElement('div');
                 line.className = 'lane-line';
-                line.style.left = `${i * 100}px`;
+                line.style.left = `${i * 110}px`;
                 tilesContainer.appendChild(line);
             }
             for (let i = 0; i < maxSteps; i++) {
@@ -424,26 +363,18 @@
             document.getElementById('mode-auto').classList.toggle('active', mode === 'auto');
         }
 
-        function openOverlay(id) {
-            document.getElementById(id).style.display = 'flex';
-        }
-        function closeOverlays() {
-            document.getElementById('shop-overlay').style.display = 'none';
-            document.getElementById('settings-overlay').style.display = 'none';
-        }
+        function openOverlay(id) { closeOverlays(); document.getElementById(id).style.display = 'flex'; }
+        function closeOverlays() { document.getElementById('shop-overlay').style.display = 'none'; document.getElementById('settings-overlay').style.display = 'none'; }
 
-        function buyCoins(amount, price) {
-            // Hier wird später das PayPal SDK integriert.
-            // Simulierter Erfolg für den Test auf deinem Chromebook:
-            alert(`Du wirst zu PayPal weitergeleitet, um ${price.toFixed(2)} EUR zu bezahlen.`);
-            coins += amount;
+        function freeRefill() {
+            coins += 100;
             balanceCoinsDisplay.innerText = coins;
             closeOverlays();
         }
 
         function startRound() {
             if (coins < betCostInCoins) {
-                alert("Nicht genug Münzen! Besuche den Shop.");
+                alert("Keine Münzen mehr! Nutze den Gratis-Shop.");
                 openOverlay('shop-overlay');
                 return;
             }
@@ -455,21 +386,20 @@
             earnedMoney = 0.00;
             displayWin.innerText = "0.00";
 
-            // Minen-Generierung: Manche Runden haben Autos, manche sind frei
+            // Autos zufällig verteilen
             minePositions = Array(maxSteps).fill(false);
-            if (Math.random() > 0.3) { // 70% Chance, dass irgendwo ein Auto kommt
-                let randomDanger = Math.floor(Math.random() * 6) + 2; // Autos lauern ab Schritt 2
-                minePositions[randomDanger] = true;
-            }
+            let randomDanger = Math.floor(Math.random() * 5) + 2; 
+            minePositions[randomDanger] = true;
 
             generateRoad();
-            chicken.style.left = '75px';
+            chicken.style.left = '55px'; // Startposition Farm
+            chicken.style.top = '50%';
             scroller.scrollLeft = 0;
 
             if (gameMode === 'manual') {
                 prepareJumpButton();
             } else {
-                runAutoMode();
+                startAutoModeLoop();
             }
         }
 
@@ -491,83 +421,90 @@
 
             const targetGully = document.getElementById(`step-${currentStep}`);
             
-            // Logik: Hat diese Stufe ein Auto?
+            // HIER PASSIERT DIE LANDUNG: Berechnet exakt die Mitte der Kachel
+            const targetX = targetGully.offsetLeft + (targetGully.offsetWidth / 2) - (chicken.offsetWidth / 2) - 15;
+            chicken.style.left = `${targetX}px`;
+
             if (minePositions[currentStep]) {
                 isGameRunning = false;
-                
-                // Auto kommt langsam von oben runter gefahren
+                if (autoTimer) clearInterval(autoTimer);
+
+                // Auto kommt langsam angefahren
                 const car = document.createElement('div');
                 car.className = 'car-obstacle';
                 car.innerText = '🚘';
                 car.style.left = `${targetGully.offsetLeft + 15}px`;
                 tilesContainer.appendChild(car);
 
-                // Startet die langsame Fahr-Animation
                 setTimeout(() => { car.style.top = '35%'; }, 50);
 
                 setTimeout(() => {
-                    alert("💥 Unfall! Das Auto hat das Huhn erwischt. Gewinn verloren!");
+                    alert("💥 Auto-Crash! Versuch es noch einmal.");
                     resetToStart();
-                }, 1800);
+                }, 1500);
 
             } else {
-                // Sicher gelandet! Verwandlung in Goldmünze
-                chicken.style.left = `${targetGully.offsetLeft + 10}px`;
-                targetGully.classList.remove('active-step');
-                targetGully.classList.add('safe-coin');
+                // Sicherer Sprung direkt auf die Münze
+                setTimeout(() => {
+                    targetGully.classList.remove('active-step');
+                    targetGully.classList.add('safe-coin');
+                }, 200);
 
-                // Bei jedem erfolgreichen Schritt werden +0,50 Euro dazugerechnet!
                 earnedMoney += 0.50;
                 displayWin.innerText = earnedMoney.toFixed(2);
 
                 currentStep++;
-
-                if (currentStep > 2) scroller.scrollLeft += 95;
+                if (currentStep > 1) scroller.scrollLeft += 110;
 
                 if (currentStep >= maxSteps) {
                     isGameRunning = false;
-                    alert(`🎉 Gewonnen! Du hast die Straße geschafft und ${earnedMoney.toFixed(2)} € verdient!`);
+                    if (autoTimer) clearInterval(autoTimer);
+                    alert(`🎉 Gewonnen! Du hast ${earnedMoney.toFixed(2)} € geschafft!`);
                     resetToStart();
                 } else {
                     if (gameMode === 'manual') {
                         highlightStep();
-                        // Bietet optionales Sichern an
                         document.getElementById('action-area').innerHTML = `
                             <button class="action-button btn-green-main" onclick="executeStep()" style="margin-bottom:5px;">Weiter Springen</button>
-                            <button class="action-button" onclick="cashOutEarly()" style="background:#d32f2f;">Guthaben Sichern (${earnedMoney.toFixed(2)}€)</button>
+                            <button class="action-button" onclick="cashOutEarly()" style="background:#d32f2f;">Sichern (${earnedMoney.toFixed(2)}€)</button>
                         `;
                     }
                 }
             }
         }
 
-        function cashOutEarly() {
-            isGameRunning = false;
-            alert(`Gesichert! ${earnedMoney.toFixed(2)} € wurden deinem Konto hinzugefügt.`);
-            resetToStart();
-        }
-
-        function runAutoMode() {
-            btnAction.disabled = true;
-            btnAction.innerText = "Automatische Fahrt...";
+        function startAutoModeLoop() {
+            document.getElementById('action-area').innerHTML = `
+                <button id="btn-action" class="action-button" style="background:#555;" disabled>Auto-Modus läuft...</button>
+            `;
             
-            let autoInterval = setInterval(() => {
+            // Der Auto-Modus macht nun alle 1.5 Sekunden vollautomatisch den Schritt
+            autoTimer = setInterval(() => {
                 if (!isGameRunning) {
-                    clearInterval(autoInterval);
+                    clearInterval(autoTimer);
                     return;
                 }
-                executeStep();
                 
-                // Im Automodus sichert das System zufällig nach ein paar Schritten ab
-                if (currentStep >= 3 && Math.random() > 0.6) {
-                    clearInterval(autoInterval);
+                executeStep();
+
+                // KI entscheidet im Auto-Modus zufällig, ob sie zwischendurch aufhört und sichert
+                if (isGameRunning && currentStep >= 4 && Math.random() > 0.7) {
+                    clearInterval(autoTimer);
                     cashOutEarly();
                 }
-            }, 1200);
+            }, 1500);
+        }
+
+        function cashOutEarly() {
+            isGameRunning = false;
+            if (autoTimer) clearInterval(autoTimer);
+            alert(`Runde beendet! Du nimmst ${earnedMoney.toFixed(2)} € mit.`);
+            resetToStart();
         }
 
         function resetToStart() {
             isGameRunning = false;
+            if (autoTimer) clearInterval(autoTimer);
             document.getElementById('action-area').innerHTML = `
                 <button id="btn-action" class="action-button btn-green-main" onclick="startRound()">Runde starten</button>
             `;
