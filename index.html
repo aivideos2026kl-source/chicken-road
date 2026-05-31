@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chicken Road - Amiry Games Replica</title>
+    <title>Chicken Road - Premium Edition</title>
     <style>
         :root {
             --bg-dark: #0f0b1e;
@@ -13,13 +13,14 @@
             --btn-purple: #6a1b9a;
             --text-light: #ffffff;
             --text-muted: #8b85b1;
+            --gold: #ffd700;
         }
 
         body {
             margin: 0;
             padding: 0;
             background-color: var(--bg-dark);
-            font-family: 'Arial', sans-serif;
+            font-family: 'Segoe UI', Arial, sans-serif;
             color: var(--text-light);
             display: flex;
             justify-content: center;
@@ -28,89 +29,82 @@
             user-select: none;
         }
 
-        /* Haupt-App-Container (Hochformat wie auf dem Smartphone) */
         .app-container {
             width: 100%;
-            max-width: 420px;
-            height: 92vh;
+            max-width: 430px;
+            height: 95vh;
             background-color: #130e2b;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.8);
+            position: relative;
         }
 
-        /* --- SPIELFELD (OBEN) --- */
+        /* --- MENÜBAR OBEN --- */
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: #1a1336;
+            border-bottom: 1px solid #2d2356;
+            z-index: 30;
+        }
+        .nav-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        .nav-btn {
+            background: #271e4f;
+            border: 1px solid #3c326d;
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        .nav-btn:hover { background: #35296a; }
+
+        /* --- SPIELFELD --- */
         .game-view {
             flex: 1;
             position: relative;
-            background-color: #726d7c; /* Asphalt-Farbe */
+            background-color: #555; 
             overflow: hidden;
             display: flex;
         }
 
-        /* Linke Seite: Die Farm (Maisfeld & Wasserturm) */
         .farm-side {
-            width: 140px;
-            background: #2e7d32; /* Grünes Gras */
+            width: 120px;
+            background: #2e7d32; 
             position: relative;
-            border-right: 4px solid #5d4037; /* Zaun/Erde-Linie */
+            border-right: 4px solid #5d4037;
             z-index: 5;
             flex-shrink: 0;
-            box-shadow: 5px 0 15px rgba(0,0,0,0.3);
         }
 
-        /* Pixel-Grafiken simuliert mit CSS */
-        .field-corn {
-            height: 60%;
-            background: repeating-linear-gradient(45deg, #fbc02d, #fbc02d 10px, #f57f17 10px, #f57f17 20px);
-            border-bottom: 8px solid #4caf50;
-        }
-
-        .water-tower {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            width: 45px;
-            height: 55px;
-            background: #ffb74d;
-            border-radius: 8px 8px 0 0;
-            border: 3px solid #e65100;
-        }
-        .water-tower::after {
-            content: '';
-            position: absolute;
-            bottom: -20px;
-            left: 10px;
-            width: 20px;
-            height: 20px;
-            border-left: 4px solid #e65100;
-            border-right: 4px solid #e65100;
-        }
-
-        /* Das Huhn */
         .chicken {
             position: absolute;
-            left: 95px;
+            left: 75px;
             top: 50%;
             transform: translateY(-50%);
             font-size: 2.2rem;
             z-index: 10;
-            transition: left 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: left 0.4s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
-        /* Rechte Seite: Die Straße mit Fahrbahnen */
         .road-side {
             flex: 1;
             position: relative;
-            background: #616161;
+            background: #3e3e3e;
             display: flex;
             align-items: center;
             overflow-x: auto;
             scroll-behavior: smooth;
         }
-        /* Ausblenden der Scrollbar */
         .road-side::-webkit-scrollbar { display: none; }
 
         .road-container-scroll {
@@ -122,201 +116,103 @@
             position: relative;
         }
 
-        /* Gestrichelte Fahrbahnmarkierungen */
         .lane-line {
             position: absolute;
             top: 0;
             bottom: 0;
             width: 0;
-            border-left: 3px dashed rgba(255,255,255,0.4);
+            border-left: 3px dashed rgba(255,255,255,0.3);
         }
 
-        /* Gullydeckel (Die Kacheln / Stufen) */
+        /* Gullydeckel */
         .gully-tile {
             width: 65px;
             height: 65px;
             background: radial-gradient(circle, #424242 0%, #212121 100%);
             border: 4px solid #111;
             border-radius: 50%;
-            margin-right: 25px;
+            margin-right: 30px;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             font-weight: bold;
             color: #aaa;
-            box-shadow: inset 0 0 10px #000, 0 4px 6px rgba(0,0,0,0.4);
-            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.4);
             position: relative;
             z-index: 6;
             flex-shrink: 0;
-            transition: transform 0.1s;
+            transition: all 0.3s ease;
         }
         .gully-tile.active-step {
-            border-color: #9e9e9e;
-            color: #fff;
+            border-color: var(--gold);
+            box-shadow: 0 0 12px var(--gold);
         }
 
-        /* Zustände der Gullydeckel */
-        .gully-tile.safe-cone {
-            background: #7986cb; /* Platzhalter für Hütchen-Hintergrund */
-            border-color: #3f51b5;
-        }
-        .gully-tile.safe-cone::after {
-            content: '📐'; /* Leitkegel-Emoji */
-            font-size: 1.8rem;
-            position: absolute;
-        }
-        
+        /* Verwandlung in Goldmünze nach Sprung */
         .gully-tile.safe-coin {
-            background: #fff176;
-            border-color: #fbc02d;
+            background: radial-gradient(circle, #ffee55 0%, #fbc02d 100%);
+            border-color: #fff;
+            transform: scale(1.05);
         }
         .gully-tile.safe-coin::after {
             content: '🪙';
-            font-size: 1.8rem;
+            font-size: 2rem;
             position: absolute;
+            animation: coinPop 0.3s ease-out;
         }
 
-        /* Hindernis-Autos */
+        @keyframes coinPop {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+
+        /* Hindernis: Autos fahren jetzt langsam von oben nach unten */
         .car-obstacle {
             position: absolute;
-            font-size: 2.5rem;
+            font-size: 2.4rem;
             z-index: 12;
-            transform: rotate(-90deg); /* Auto fährt nach oben */
-            transition: top 0.4s ease-in;
+            transform: rotate(180deg); /* Nach unten gerichtet */
+            top: -60px;
+            transition: top 2.5s linear; /* Langsame, gleichmäßige Fahrt */
         }
 
-        /* Kopf-Anzeigen auf dem Spielfeld */
-        .top-overlay-stats {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            right: 15px;
-            display: flex;
-            justify-content: space-between;
-            z-index: 20;
-            pointer-events: none;
-        }
-
-        .balance-badge {
-            background: rgba(28, 21, 58, 0.85);
-            padding: 8px 14px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 0.9rem;
-            border: 1px solid #3c326d;
-        }
-
-        .history-multipliers {
-            display: flex;
-            gap: 6px;
-        }
-        .multi-badge {
-            background: var(--btn-green);
-            color: #000;
-            font-weight: bold;
-            font-size: 0.8rem;
-            padding: 6px 12px;
-            border-radius: 15px;
-        }
-
-
-        /* --- STEUERUNGSPANEL (UNTEN) --- */
+        /* --- STEUERUNG --- */
         .control-panel {
             background-color: var(--panel-bg);
-            padding: 20px;
+            padding: 15px 20px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 12px;
             border-top: 2px solid #2d2356;
         }
 
-        /* Grüne Haupt-Aktionsknöpfe */
         .action-button {
             width: 100%;
-            padding: 16px;
+            padding: 14px;
             border: none;
             border-radius: 8px;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: bold;
             color: #fff;
             cursor: pointer;
-            transition: background 0.1s;
         }
         .btn-green-main { background-color: var(--btn-green); color: #000; }
         .btn-green-main:hover { background-color: var(--btn-green-hover); }
-        .btn-green-main:disabled { background-color: #17532d; color: #666; cursor: not-allowed; }
+        .btn-green-main:disabled { background: #335c43; color: #777; cursor: not-allowed; }
 
-        /* Einsatz-Eingabe Zeile */
-        .form-row {
+        .stats-bar {
             display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-        .form-label {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            font-weight: 600;
-        }
-
-        .input-wrapper {
-            display: flex;
-            background-color: var(--bg-dark);
-            border-radius: 6px;
-            overflow: hidden;
-            border: 1px solid #3c326d;
-        }
-        .input-wrapper input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            padding: 12px;
-            color: #fff;
-            font-size: 1rem;
-            font-weight: bold;
-            outline: none;
-        }
-        .currency-label {
-            display: flex;
-            align-items: center;
-            padding-right: 15px;
-            font-weight: bold;
+            justify-content: space-between;
             font-size: 0.9rem;
-            color: #fff;
-        }
-
-        .shortcut-group {
-            display: flex;
-            border-left: 1px solid #3c326d;
-        }
-        .shortcut-btn {
-            background: #271e4f;
-            border: none;
-            color: #fff;
-            padding: 0 15px;
-            font-weight: bold;
-            cursor: pointer;
-            border-left: 1px solid #3c326d;
-        }
-        .shortcut-btn:hover { background: #35296a; }
-
-        /* Risiko Dropdown */
-        .dropdown-select {
-            background-color: var(--bg-dark);
+            background: var(--bg-dark);
+            padding: 10px;
+            border-radius: 8px;
             border: 1px solid #3c326d;
-            color: #fff;
-            padding: 12px;
-            border-radius: 6px;
-            font-size: 1rem;
-            font-weight: bold;
-            outline: none;
-            cursor: pointer;
         }
+        .stat-val { font-weight: bold; color: var(--gold); }
 
-        /* Manuell / Auto Tabs unten */
         .tab-group {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -328,132 +224,190 @@
             background: transparent;
             border: none;
             color: var(--text-muted);
-            padding: 10px;
+            padding: 8px;
             font-weight: bold;
             border-radius: 25px;
             cursor: pointer;
-            font-size: 0.95rem;
         }
         .tab-btn.active {
             background-color: var(--btn-purple);
             color: #fff;
         }
 
-        #status-info {
-            text-align: center;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-top: -5px;
-            min-height: 16px;
+        /* --- OVERLAYS (SHOP / INLINE-MENÜS) --- */
+        .overlay-screen {
+            position: absolute;
+            top: 55px; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 11, 30, 0.95);
+            z-index: 100;
+            padding: 20px;
+            display: none;
+            flex-direction: column;
+            overflow-y: auto;
         }
+        .overlay-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #3c326d;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .close-btn {
+            background: none; border: none; color: #ff3333; font-size: 1.5rem; cursor: pointer;
+        }
+
+        /* Shop Items */
+        .shop-item {
+            background: #1c153a;
+            border: 1px solid #3c326d;
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .paypal-fake-btn {
+            background: #0070ba;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .paypal-fake-btn:hover { background: #005ea6; }
+
+        .settings-section {
+            margin-bottom: 20px;
+        }
+        .settings-section h4 { margin: 0 0 8px 0; color: var(--text-muted); }
     </style>
 </head>
 <body>
 
     <div class="app-container">
         
-        <!-- VISUELLES SPIELFELD -->
-        <div class="game-view">
-            <!-- Anzeigen oben drüber -->
-            <div class="top-overlay-stats">
-                <div class="balance-badge"><span id="user-balance">10.006,04</span> EUR</div>
-                <div class="history-multipliers">
-                    <div class="multi-badge">3.53×</div>
-                    <div class="multi-badge">1.45×</div>
-                    <div class="multi-badge">1.03×</div>
-                </div>
+        <!-- NAVIGATION -->
+        <div class="top-nav">
+            <div style="font-weight: bold; display: flex; align-items: center; gap: 5px;">
+                <span>🪙</span> <span id="balance-coins">100</span> Münzen
             </div>
-
-            <!-- Linker Farm-Bereich -->
-            <div class="farm-side">
-                <div class="field-corn"></div>
-                <div class="water-tower"></div>
-                <!-- Das Huhn -->
-                <div class="chicken" id="player-chicken">🐓</div>
-            </div>
-
-            <!-- Rechter Straßen-Bereich (Horizontal scrollbar) -->
-            <div class="road-side" id="road-scroller">
-                <div class="road-container-scroll" id="tiles-container">
-                    <!-- Fahrbahnlinien & Gullydeckel werden per JS erzeugt -->
-                </div>
+            <div class="nav-buttons">
+                <button class="nav-btn" onclick="openOverlay('shop-overlay')">🛒 Shop</button>
+                <button class="nav-btn" onclick="openOverlay('settings-overlay')">⚙️ Menü</button>
             </div>
         </div>
 
-        <!-- STEUERUNGSPANEL UNTEN -->
+        <!-- SPIELFELD -->
+        <div class="game-view">
+            <div class="farm-side">
+                <div class="chicken" id="player-chicken">🐓</div>
+            </div>
+            <div class="road-side" id="road-scroller">
+                <div class="road-container-scroll" id="tiles-container"></div>
+            </div>
+        </div>
+
+        <!-- STEUERUNG -->
         <div class="control-panel">
+            <div class="stats-bar">
+                <div>Einsatz: <span class="stat-val" id="display-bet">10.00</span> Münzen</div>
+                <div>Gewinnlauf: <span class="stat-val" id="display-win">0.00</span> €</div>
+            </div>
+
+            <!-- Dieses Feld bleibt immer als Einsatz-Button sichtbar -->
+            <div id="action-area">
+                <button id="btn-action" class="action-button btn-green-main" onclick="startRound()">Runde starten</button>
+            </div>
+
+            <div class="tab-group">
+                <button id="mode-manual" class="tab-btn active" onclick="setMode('manual')">Manuell</button>
+                <button id="mode-auto" class="tab-btn" onclick="setMode('auto')">Auto-Modus</button>
+            </div>
+        </div>
+
+        <!-- SHOP OVERLAY -->
+        <div id="shop-overlay" class="overlay-screen">
+            <div class="overlay-header">
+                <h3>🛒 Münzen-Shop (PayPal)</h3>
+                <button class="close-btn" onclick="closeOverlays()">×</button>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Münzen werden sofort nach Zahlung gutgeschrieben.</p>
             
-            <!-- Dynamische Aktions-Buttons -->
-            <div id="buttons-area">
-                <button id="btn-main-action" class="action-button btn-green-main" onclick="startBet()">Einsatz</button>
+            <div class="shop-item">
+                <div><strong>50 Münzen</strong><br><small>Preis: 5,00 EUR</small></div>
+                <button class="paypal-fake-btn" onclick="buyCoins(50, 5.00)">Mit PayPal</button>
             </div>
-
-            <div id="status-info">Bereit für den Start. Platziere deinen Einsatz!</div>
-
-            <!-- Einsatzbetrag -->
-            <div class="form-row">
-                <div class="form-label">Einsatzbetrag</div>
-                <div class="input-wrapper">
-                    <input type="number" id="bet-input" value="2.00" step="0.5" min="0.1">
-                    <div class="currency-label">EUR</div>
-                    <div class="shortcut-group">
-                        <button class="shortcut-btn" onclick="modifyBet(0.5)">½</button>
-                        <button class="shortcut-btn" onclick="modifyBet(2)">2x</button>
-                    </div>
-                </div>
+            <div class="shop-item">
+                <div><strong>120 Münzen</strong> <span style="color: var(--gold); font-size: 0.75rem;">+20%</span><br><small>Preis: 10,00 EUR</small></div>
+                <button class="paypal-fake-btn" onclick="buyCoins(120, 10.00)">Mit PayPal</button>
             </div>
+            <div class="shop-item">
+                <div><strong>300 Münzen</strong> <span style="color: var(--gold); font-size: 0.75rem;">Mega-Pack</span><br><small>Preis: 25,00 EUR</small></div>
+                <button class="paypal-fake-btn" onclick="buyCoins(300, 25.00)">Mit PayPal</button>
+            </div>
+        </div>
 
-            <!-- Risiko -->
-            <div class="form-row">
-                <div class="form-label">Risiko</div>
-                <select class="dropdown-select">
-                    <option>Niedrig</option>
-                    <option>Mittel</option>
-                    <option>Hoch</option>
+        <!-- EINSTELLUNGEN & SUPPORT OVERLAY -->
+        <div id="settings-overlay" class="overlay-screen">
+            <div class="overlay-header">
+                <h3>⚙️ Einstellungen & Support</h3>
+                <button class="close-btn" onclick="closeOverlays()">×</button>
+            </div>
+            
+            <div class="settings-section">
+                <h4>🌐 Sprache / Language</h4>
+                <select style="width:100%; padding:8px; background:#271e4f; color:#fff; border:1px solid #3c326d; border-radius:4px;">
+                    <option>Deutsch (DE)</option>
+                    <option>English (EN)</option>
+                    <option>Türkçe (TR)</option>
                 </select>
             </div>
 
-            <!-- Modus (Manuell / Auto) -->
-            <div class="tab-group">
-                <button class="tab-btn active">Manuell</button>
-                <button class="tab-btn">Auto</button>
+            <div class="settings-section">
+                <h4>💳 Wallet Einrichtung</h4>
+                <input type="text" placeholder="Deine Krypto- oder Auszahlungsadresse" style="width:95%; padding:8px; background:#271e4f; color:#fff; border:1px solid #3c326d; border-radius:4px;">
+                <button class="nav-btn" style="margin-top:5px; width:100%;">Speichern</button>
             </div>
 
+            <div class="settings-section" style="background: #1c153a; padding: 12px; border-radius: 8px;">
+                <h4>📢 Live-Support</h4>
+                <p style="font-size:0.85rem; margin: 0 0 10px 0;">Probleme mit der Einzahlung? Kontaktiere uns direkt via Telegram:</p>
+                <a href="https://t.me/DeinSupportBot" target="_blank" style="color: var(--btn-green); font-weight: bold; text-decoration: none;">👉 @DeinSupportBot</a>
+            </div>
         </div>
+
     </div>
 
     <script>
-        let balance = 10006.04;
-        let currentBet = 2.00;
+        let coins = 100;
+        let gameMode = 'manual'; // manual oder auto
+        let isGameRunning = false;
         let currentStep = 0;
         let maxSteps = 10;
-        let isGameRunning = false;
-        
-        // Multiplikatoren exakt wie aus deinen Bildern abgelesen
-        const multipliers = [1.03, 1.07, 1.12, 1.17, 1.23, 1.30, 1.37, 1.45, 1.54, 1.65];
-        let minePositions = []; // Speichert, ob auf einer Stufe ein Crash passiert
+        let earnedMoney = 0.00;
+        let betCostInCoins = 10; // Eine Runde kostet 10 Münzen
+        let minePositions = [];
+
+        const multipliers = [1.05, 1.15, 1.25, 1.40, 1.60, 1.90, 2.30, 2.80, 3.50, 5.00];
 
         const chicken = document.getElementById('player-chicken');
         const scroller = document.getElementById('road-scroller');
         const tilesContainer = document.getElementById('tiles-container');
-        const balanceDisplay = document.getElementById('user-balance');
-        const betInput = document.getElementById('bet-input');
-        const buttonsArea = document.getElementById('buttons-area');
-        const statusInfo = document.getElementById('status-info');
+        const balanceCoinsDisplay = document.getElementById('balance-coins');
+        const displayWin = document.getElementById('display-win');
+        const btnAction = document.getElementById('btn-action');
 
-        // Initialisiert die Gullydeckel auf der Straße
         function generateRoad() {
             tilesContainer.innerHTML = '';
-            
-            // Fahrbahnstreifen hinzufügen
             for(let i = 1; i <= 4; i++) {
                 const line = document.createElement('div');
                 line.className = 'lane-line';
-                line.style.left = `${i * 90}px`;
+                line.style.left = `${i * 100}px`;
                 tilesContainer.appendChild(line);
             }
-
-            // Gully-Kacheln generieren
             for (let i = 0; i < maxSteps; i++) {
                 const gully = document.createElement('div');
                 gully.className = 'gully-tile';
@@ -463,152 +417,163 @@
             }
         }
 
-        function modifyBet(factor) {
+        function setMode(mode) {
             if (isGameRunning) return;
-            let current = parseFloat(betInput.value);
-            betInput.value = (current * factor).toFixed(2);
+            gameMode = mode;
+            document.getElementById('mode-manual').classList.toggle('active', mode === 'manual');
+            document.getElementById('mode-auto').classList.toggle('active', mode === 'auto');
         }
 
-        function startBet() {
-            let betValue = parseFloat(betInput.value);
-            if (isNaN(betValue) || betValue > balance || betValue <= 0) {
-                statusInfo.innerText = "Ungültiger Kontostand oder Einsatz!";
+        function openOverlay(id) {
+            document.getElementById(id).style.display = 'flex';
+        }
+        function closeOverlays() {
+            document.getElementById('shop-overlay').style.display = 'none';
+            document.getElementById('settings-overlay').style.display = 'none';
+        }
+
+        function buyCoins(amount, price) {
+            // Hier wird später das PayPal SDK integriert.
+            // Simulierter Erfolg für den Test auf deinem Chromebook:
+            alert(`Du wirst zu PayPal weitergeleitet, um ${price.toFixed(2)} EUR zu bezahlen.`);
+            coins += amount;
+            balanceCoinsDisplay.innerText = coins;
+            closeOverlays();
+        }
+
+        function startRound() {
+            if (coins < betCostInCoins) {
+                alert("Nicht genug Münzen! Besuche den Shop.");
+                openOverlay('shop-overlay');
                 return;
             }
 
-            // Spiel initialisieren
-            balance -= betValue;
-            currentBet = betValue;
-            currentStep = 0;
+            coins -= betCostInCoins;
+            balanceCoinsDisplay.innerText = coins;
             isGameRunning = true;
-            
-            // Minen-Logik festlegen (z.B. Schritt 3 ist diesmal eine Mine)
-            minePositions = Array(maxSteps).fill(false);
-            let randomCrashSite = Math.floor(Math.random() * (maxSteps - 1)) + 1; 
-            minePositions[randomCrashSite] = true;
+            currentStep = 0;
+            earnedMoney = 0.00;
+            displayWin.innerText = "0.00";
 
-            // UI zurücksetzen
-            balanceDisplay.innerText = balance.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            // Minen-Generierung: Manche Runden haben Autos, manche sind frei
+            minePositions = Array(maxSteps).fill(false);
+            if (Math.random() > 0.3) { // 70% Chance, dass irgendwo ein Auto kommt
+                let randomDanger = Math.floor(Math.random() * 6) + 2; // Autos lauern ab Schritt 2
+                minePositions[randomDanger] = true;
+            }
+
             generateRoad();
-            chicken.style.left = '95px';
+            chicken.style.left = '75px';
             scroller.scrollLeft = 0;
 
-            highlightActiveGully();
-            switchToGameButtons();
-            statusInfo.innerText = "Spiel läuft! Drücke 'Springen' für den ersten Schritt.";
-        }
-
-        function highlightActiveGully() {
-            // Alle Deckel zurücksetzen, aktuellen hervorheben
-            document.querySelectorAll('.gully-tile').forEach((el, index) => {
-                if (index === currentStep) {
-                    el.classList.add('active-step');
-                } else {
-                    el.classList.remove('active-step');
-                }
-            });
-        }
-
-        function switchToGameButtons() {
-            // Tauscht den "Einsatz"-Button gegen "Springen" und "Abheben" aus (wie im Screenshot)
-            buttonsArea.innerHTML = `
-                <button id="btn-jump" class="action-button btn-green-main" onclick="makeJump()" style="margin-bottom: 8px;">Springen</button>
-                <button id="btn-cashout" class="action-button btn-green-main" onclick="cashOut()" style="background-color: #00cd52;">Abheben</button>
-            `;
-            updateCashoutButtonText();
-        }
-
-        function updateCashoutButtonText() {
-            const cashoutBtn = document.getElementById('btn-cashout');
-            if (!cashoutBtn) return;
-            
-            if (currentStep === 0) {
-                cashoutBtn.innerText = "Abheben";
-                cashoutBtn.disabled = true;
-                cashoutBtn.style.opacity = "0.5";
+            if (gameMode === 'manual') {
+                prepareJumpButton();
             } else {
-                let currentWin = currentBet * multipliers[currentStep - 1];
-                cashoutBtn.innerText = `Abheben (${currentWin.toFixed(2)} EUR)`;
-                cashoutBtn.disabled = false;
-                cashoutBtn.style.opacity = "1";
+                runAutoMode();
             }
         }
 
-        function makeJump() {
+        function prepareJumpButton() {
+            document.getElementById('action-area').innerHTML = `
+                <button id="btn-action" class="action-button btn-green-main" onclick="executeStep()">Springen 🐓</button>
+            `;
+            highlightStep();
+        }
+
+        function highlightStep() {
+            document.querySelectorAll('.gully-tile').forEach((el, index) => {
+                el.classList.toggle('active-step', index === currentStep);
+            });
+        }
+
+        function executeStep() {
             if (!isGameRunning) return;
 
             const targetGully = document.getElementById(`step-${currentStep}`);
             
+            // Logik: Hat diese Stufe ein Auto?
             if (minePositions[currentStep]) {
-                // --- CRASH / AUTO ERWISCHT DAS HUHN ---
                 isGameRunning = false;
-                statusInfo.innerHTML = "<span style='color: #ff3333;'>CRASH! Ein Auto hat das Huhn erwischt!</span>";
                 
-                // Auto-Hindernis visuell einfliegen lassen
+                // Auto kommt langsam von oben runter gefahren
                 const car = document.createElement('div');
                 car.className = 'car-obstacle';
-                car.innerText = Math.random() > 0.5 ? '🚓' : '🚕';
-                car.style.left = `${targetGully.offsetLeft + 10}px`;
-                car.style.top = '-50px';
+                car.innerText = '🚘';
+                car.style.left = `${targetGully.offsetLeft + 15}px`;
                 tilesContainer.appendChild(car);
-                
-                setTimeout(() => { car.style.top = '40%'; }, 50);
 
-                // Zurück zum Start-Button
-                setTimeout(resetToBetButton, 1500);
+                // Startet die langsame Fahr-Animation
+                setTimeout(() => { car.style.top = '35%'; }, 50);
+
+                setTimeout(() => {
+                    alert("💥 Unfall! Das Auto hat das Huhn erwischt. Gewinn verloren!");
+                    resetToStart();
+                }, 1800);
+
             } else {
-                // --- ERFOLGREICHER SPRUNG ---
-                // Huhn visuell auf den Gullydeckel bewegen
-                chicken.style.left = `${targetGully.offsetLeft + 20}px`;
-                
-                // Gullydeckel optisch verändern (Zufällig Hütchen oder Münze wie auf den Bildern)
-                if (currentStep % 2 === 0) {
-                    targetGully.classList.add('safe-cone');
-                } else {
-                    targetGully.classList.add('safe-coin');
-                }
+                // Sicher gelandet! Verwandlung in Goldmünze
+                chicken.style.left = `${targetGully.offsetLeft + 10}px`;
+                targetGully.classList.remove('active-step');
+                targetGully.classList.add('safe-coin');
+
+                // Bei jedem erfolgreichen Schritt werden +0,50 Euro dazugerechnet!
+                earnedMoney += 0.50;
+                displayWin.innerText = earnedMoney.toFixed(2);
 
                 currentStep++;
-                
-                // Kamera scrollt automatisch mit dem Huhn mit
-                if (currentStep > 2) {
-                    scroller.scrollLeft += 90;
-                }
+
+                if (currentStep > 2) scroller.scrollLeft += 95;
 
                 if (currentStep >= maxSteps) {
-                    // Ende erreicht
-                    statusInfo.innerHTML = "<span style='color: #00cd52;'>Maximaler Erfolg! Straße überquert!</span>";
-                    cashOut();
+                    isGameRunning = false;
+                    alert(`🎉 Gewonnen! Du hast die Straße geschafft und ${earnedMoney.toFixed(2)} € verdient!`);
+                    resetToStart();
                 } else {
-                    highlightActiveGully();
-                    updateCashoutButtonText();
-                    statusInfo.innerText = "Sicher gelandet! Nächster Sprung oder Auszahlen?";
+                    if (gameMode === 'manual') {
+                        highlightStep();
+                        // Bietet optionales Sichern an
+                        document.getElementById('action-area').innerHTML = `
+                            <button class="action-button btn-green-main" onclick="executeStep()" style="margin-bottom:5px;">Weiter Springen</button>
+                            <button class="action-button" onclick="cashOutEarly()" style="background:#d32f2f;">Guthaben Sichern (${earnedMoney.toFixed(2)}€)</button>
+                        `;
+                    }
                 }
             }
         }
 
-        function cashOut() {
-            if (!isGameRunning || currentStep === 0) return;
-
+        function cashOutEarly() {
             isGameRunning = false;
-            let winMultiplier = multipliers[currentStep - 1];
-            let totalWin = currentBet * winMultiplier;
-            balance += totalWin;
+            alert(`Gesichert! ${earnedMoney.toFixed(2)} € wurden deinem Konto hinzugefügt.`);
+            resetToStart();
+        }
 
-            balanceDisplay.innerText = balance.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            statusInfo.innerHTML = `<span style='color: #00cd52;'>Erfolgreich! +${totalWin.toFixed(2)} EUR ausgezahlt.</span>`;
+        function runAutoMode() {
+            btnAction.disabled = true;
+            btnAction.innerText = "Automatische Fahrt...";
             
-            resetToBetButton();
+            let autoInterval = setInterval(() => {
+                if (!isGameRunning) {
+                    clearInterval(autoInterval);
+                    return;
+                }
+                executeStep();
+                
+                // Im Automodus sichert das System zufällig nach ein paar Schritten ab
+                if (currentStep >= 3 && Math.random() > 0.6) {
+                    clearInterval(autoInterval);
+                    cashOutEarly();
+                }
+            }, 1200);
         }
 
-        function resetToBetButton() {
+        function resetToStart() {
             isGameRunning = false;
-            buttonsArea.innerHTML = `<button id="btn-main-action" class="action-button btn-green-main" onclick="startBet()">Einsatz</button>`;
-            // Eventuelle Autos löschen
-            document.querySelectorAll('.car-obstacle').forEach(c => c.remove());
+            document.getElementById('action-area').innerHTML = `
+                <button id="btn-action" class="action-button btn-green-main" onclick="startRound()">Runde starten</button>
+            `;
+            generateRoad();
         }
 
-        // Beim Laden direkt die leere Straße zeichnen
         generateRoad();
     </script>
 </body>
