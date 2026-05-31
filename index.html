@@ -3,149 +3,455 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chicken Road - Kacheln Original</title>
+    <title>Chicken Road - Original Casino Replica</title>
     <style>
+        :root {
+            --bg-main: #0f212e;
+            --bg-card: #1a2c38;
+            --bg-input: #0f212e;
+            --primary: #2f4553;
+            --primary-hover: #557086;
+            --accent-green: #00e701;
+            --accent-green-hover: #1fff22;
+            --danger: #e91146;
+            --text-color: #b1bad3;
+            --text-light: #ffffff;
+            --gold: #f5d130;
+        }
+
         body {
             margin: 0;
+            padding: 0;
+            background-color: var(--bg-main);
+            font-family: "Proxima Nova", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Haupt-Interface im originalen Split-Layout */
+        .game-interface {
+            display: flex;
+            width: 900px;
+            max-width: 95vw;
+            background: var(--bg-card);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+        }
+
+        /* Linke Spalte: Wetten-Steuerung */
+        .sidebar {
+            width: 300px;
+            background: #213743;
             padding: 20px;
-            background-color: #0f172a;
-            font-family: 'Arial', sans-serif;
-            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            box-sizing: border-box;
+            border-right: 4px solid var(--bg-main);
+        }
+
+        .input-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-color);
+        }
+
+        .wallet-display {
+            background: var(--bg-input);
+            padding: 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: var(--text-light);
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            border: 1px solid #2f4553;
+        }
+        .wallet-display span { color: var(--accent-green); }
+
+        .bet-input-container {
+            display: flex;
+            background: var(--bg-input);
+            border-radius: 4px;
+            padding: 4px;
+            border: 2px solid #2f4553;
+            margin-bottom: 20px;
+        }
+        .bet-input-container:focus-within {
+            border-color: #557086;
+        }
+
+        .bet-input-container input {
+            width: 60%;
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            font-weight: bold;
+            font-size: 1rem;
+            padding-left: 8px;
+            outline: none;
+        }
+
+        .bet-shortcut-btn {
+            width: 20%;
+            background: var(--primary);
+            color: var(--text-light);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+        .bet-shortcut-btn:hover { background: var(--primary-hover); }
+        .bet-shortcut-btn:first-of-type { margin-right: 4px; }
+
+        .main-action-btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 4px;
+            font-size: 1.05rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .btn-bet { background: var(--accent-green); color: #000; }
+        .btn-bet:hover { background: var(--accent-green-hover); }
+        .btn-bet:disabled { background: #194626; color: #555; cursor: not-allowed; }
+
+        .btn-cashout { background: var(--gold); color: #000; display: none; }
+        .btn-cashout:hover { background: #ffe14d; }
+
+        /* Rechte Spalte: Das originale Spielfeld */
+        .board-container {
+            flex: 1;
+            background: var(--bg-main);
+            padding: 30px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-height: 100vh;
+            justify-content: center;
+            position: relative;
         }
 
-        #game-container {
+        .live-multiplier {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--text-light);
+            margin-bottom: 25px;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        .live-multiplier.win { color: var(--accent-green); }
+        .live-multiplier.lose { color: var(--danger); }
+
+        /* Das exakte Grid - von unten nach oben bespielbar */
+        .chicken-grid {
+            display: flex;
+            flex-direction: column-reverse; /* Wichtig: Reihe 1 startet unten! */
+            gap: 9px;
             width: 100%;
-            max-width: 450px;
-            background: #1e293b;
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            box-sizing: border-box;
+            max-width: 400px;
         }
 
-        h2 {
-            text-align: center;
-            margin-top: 0;
-            color: #38bdf8;
-            letter-spacing: 1px;
-        }
-
-        .stats-bar {
+        .grid-row {
             display: flex;
-            justify-content: space-between;
-            background: #0f172a;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-weight: bold;
-        }
-
-        #balance { color: #4ade80; }
-        #multiplier-box {
-            text-align: center;
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #facc15;
-            margin: 15px 0;
-        }
-
-        /* Das Spielfeld - Von unten nach oben */
-        #grid {
-            display: flex;
-            flex-direction: column-reverse; /* Damit Reihe 1 unten ist */
-            gap: 8px;
-            background: #334155;
-            padding: 12px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-        }
-
-        .row {
-            display: flex;
-            gap: 8px;
-            opacity: 0.4; /* Inaktive Reihen sind ausgegraut */
+            gap: 9px;
+            width: 100%;
+            transition: all 0.2s ease;
+            opacity: 0.3;
             pointer-events: none;
         }
 
-        .row.active {
+        .grid-row.active {
             opacity: 1;
             pointer-events: auto;
         }
 
-        .row.completed {
+        .grid-row.past {
             opacity: 0.7;
             pointer-events: none;
         }
 
         .tile {
             flex: 1;
-            height: 50px;
-            background: #475569;
-            border: 2px solid #64748b;
-            border-radius: 6px;
+            aspect-ratio: 1.8 / 1; /* Originales breites Kachel-Format */
+            background: var(--primary);
+            border-radius: 5px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
-            transition: background 0.2s, transform 0.1s;
+            font-size: 1.8rem;
+            box-shadow: 0 4px 0 #1e2c37;
+            transition: transform 0.05s ease, background-color 0.2s ease;
         }
 
-        .row.active .tile:hover {
-            background: #64748b;
-            transform: scale(1.02);
+        .grid-row.active .tile:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #1e2c37;
         }
 
-        /* Zustand der Kacheln */
-        .tile.safe { background: #16a34a !important; border-color: #4ade80; }
-        .tile.mine { background: #dc2626 !important; border-color: #f87171; }
-
-        /* Steuerung */
-        .input-area {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            justify-content: space-between;
-            align-items: center;
+        .grid-row.active .tile:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #1e2c37;
         }
 
-        input {
-            width: 100px;
-            padding: 10px;
-            background: #0f172a;
-            border: 1px solid #475569;
-            color: white;
-            border-radius: 6px;
-            font-size: 1rem;
-            text-align: center;
+        /* Zustandsklassen nach dem Klicken */
+        .tile.success-tile {
+            background: var(--accent-green) !important;
+            box-shadow: 0 4px 0 #009901 !important;
+        }
+        .tile.dead-tile {
+            background: var(--danger) !important;
+            box-shadow: 0 4px 0 #a30b30 !important;
+        }
+        .tile.revealed-bones {
+            background: #1a2c38;
+            opacity: 0.4;
+            box-shadow: none;
         }
 
-        .btn {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        #start-btn { background: #3b82f6; color: white; }
-        #start-btn:hover { background: #2563eb; }
-        
-        #cashout-btn { background: #10b981; color: white; display: none; }
-        #cashout-btn:hover { background: #059669; }
-
-        #status {
-            text-align: center;
-            font-weight: bold;
-            height: 20px;
-            margin-top: 10px;
+        #status-toast {
+            margin-top: 20px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-light);
+            min-height: 20px;
         }
     </style>
-</head
+</head>
+<body>
+
+    <div class="game-interface">
+        <!-- LINKES MENÜ -->
+        <div class="sidebar">
+            <div class="input-label">Guthaben (USD)</div>
+            <div class="wallet-display">$ <span id="balance-value">1,000.00</span></div>
+
+            <div class="input-label">Einsatzbetrag</div>
+            <div class="bet-input-container">
+                <input type="number" id="bet-amount" value="10.00" step="1" min="1">
+                <button class="bet-shortcut-btn" onclick="adjustBet('half')">½</button>
+                <button class="bet-shortcut-btn" onclick="adjustBet('double')">2x</button>
+            </div>
+
+            <div style="margin-top: auto;">
+                <button id="action-bet-btn" class="main-action-btn btn-bet" onclick="initiateGame()">Wette platzieren</button>
+                <button id="action-cashout-btn" class="main-action-btn btn-cashout" onclick="executeCashout()">Ausmisten (Cash Out)</button>
+            </div>
+        </div>
+
+        <!-- RECHTES SPIELFELD -->
+        <div class="board-container">
+            <div id="multiplier-text" class="live-multiplier">1.00x</div>
+            
+            <div class="chicken-grid" id="game-grid">
+                <!-- Die Reihen werden dynamisch per JS generiert -->
+            </div>
+
+            <div id="status-toast">Stelle deinen Einsatz ein und starte das Spiel.</div>
+        </div>
+    </div>
+
+    <script>
+        let userBalance = 1000.00;
+        let activeBet = 0.00;
+        let runningMultiplier = 1.00;
+        let currentLevel = 0;
+        
+        const totalLevels = 7; // 7 Reihen nach oben
+        const lanesPerRow = 3; // 3 Kacheln pro Reihe (Original Stake/Chicken Style)
+        let minePositions = []; // Wo die fiesen Knochen/Minen liegen
+        let isSessionActive = false;
+
+        // Multiplikator-Stufen (Originale Skalierung bei 1 Mine aus 3 Kacheln)
+        const multiplierSteps = [1.45, 2.18, 3.27, 4.90, 7.36, 11.04, 16.56];
+
+        const gridContainer = document.getElementById('game-grid');
+        const balanceDisplay = document.getElementById('balance-value');
+        const betInput = document.getElementById('bet-amount');
+        const multiplierDisplay = document.getElementById('multiplier-text');
+        const statusToast = document.getElementById('status-toast');
+        
+        const betBtn = document.getElementById('action-bet-btn');
+        const cashoutBtn = document.getElementById('action-cashout-btn');
+
+        function buildGridStructure() {
+            gridContainer.innerHTML = '';
+            for (let r = 0; r < totalLevels; r++) {
+                const row = document.createElement('div');
+                row.className = 'grid-row';
+                row.id = `level-${r}`;
+                
+                for (let l = 0; l < lanesPerRow; l++) {
+                    const tile = document.createElement('div');
+                    tile.className = 'tile';
+                    tile.dataset.row = r;
+                    tile.dataset.lane = l;
+                    tile.addEventListener('click', () => processStep(r, l));
+                    row.appendChild(tile);
+                }
+                gridContainer.appendChild(row);
+            }
+        }
+
+        function adjustBet(action) {
+            if (isSessionActive) return;
+            let currentVal = parseFloat(betInput.value);
+            if (isNaN(currentVal)) currentVal = 10.00;
+            
+            if (action === 'half') {
+                betInput.value = (Math.max(1, currentVal / 2)).toFixed(2);
+            } else if (action === 'double') {
+                betInput.value = (Math.min(userBalance, currentVal * 2)).toFixed(2);
+            }
+        }
+
+        function initiateGame() {
+            let inputBet = parseFloat(betInput.value);
+            if (isNaN(inputBet) || inputBet <= 0 || inputBet > userBalance) {
+                statusToast.innerHTML = "<span style='color: var(--danger);'>Ungültiger oder zu hoher Betrag!</span>";
+                return;
+            }
+
+            // Casino-State setzen
+            userBalance -= inputBet;
+            activeBet = inputBet;
+            runningMultiplier = 1.00;
+            currentLevel = 0;
+            isSessionActive = true;
+            minePositions = [];
+
+            // UI Refresh
+            balanceDisplay.innerText = userBalance.toFixed(2);
+            multiplierDisplay.innerText = "1.00x";
+            multiplierDisplay.className = "live-multiplier";
+            statusToast.innerText = "Das Huhn betritt die Straße. Reihe 1 aktiv!";
+
+            // Generiere verdeckte Minen (1 Mine pro Etage zufällig versteckt)
+            for (let i = 0; i < totalLevels; i++) {
+                minePositions.push(Math.floor(Math.random() * lanesPerRow));
+            }
+
+            buildGridStructure();
+            
+            // Schalte die erste Reihe unten scharf
+            document.getElementById('level-0').className = 'grid-row active';
+
+            // Buttons tauschen
+            betBtn.style.display = 'none';
+            cashoutBtn.style.display = 'block';
+            cashoutBtn.disabled = true; // Erst nach dem ersten richtigen Schritt auszahlbar
+            cashoutBtn.innerText = "Cash Out";
+            betInput.disabled = true;
+        }
+
+        function processStep(rowIdx, laneIdx) {
+            if (!isSessionActive || rowIdx !== currentLevel) return;
+
+            const currentRowElement = document.getElementById(`level-${rowIdx}`);
+            const selectedTile = currentRowElement.children[laneIdx];
+            const activeMine = minePositions[rowIdx];
+
+            if (laneIdx === activeMine) {
+                // Knochen / Auto getroffen -> CRASH
+                selectedTile.className = 'tile dead-tile';
+                selectedTile.innerText = "🦴";
+                triggerExplosion();
+            } else {
+                // Huhn schreitet erfolgreich voran
+                selectedTile.className = 'tile success-tile';
+                selectedTile.innerText = "🐓";
+                
+                // Exakten Multiplikator laden
+                runningMultiplier = multiplierSteps[rowIdx];
+                multiplierDisplay.innerText = runningMultiplier.toFixed(2) + "x";
+                multiplierDisplay.classList.add('win');
+
+                currentRowElement.className = 'grid-row past';
+                
+                // Cashout Button updaten
+                cashoutBtn.disabled = false;
+                let potentialWin = (activeBet * runningMultiplier).toFixed(2);
+                cashoutBtn.innerText = `Cash Out ($${potentialWin})`;
+
+                if (currentLevel < totalLevels - 1) {
+                    currentLevel++;
+                    document.getElementById(`level-${currentLevel}`).className = 'grid-row active';
+                    statusToast.innerText = `Sicher! Gehe hoch zu Reihe ${currentLevel + 1} oder nimm den Gewinn.`;
+                } else {
+                    // Maximum erreicht
+                    statusToast.innerHTML = "<span style='color: var(--accent-green);'>MAX WIN! Du hast die Straße komplett überquert!</span>";
+                    executeCashout();
+                }
+            }
+        }
+
+        function triggerExplosion() {
+            isSessionActive = false;
+            multiplierDisplay.innerText = "0.00x";
+            multiplierDisplay.className = "live-multiplier lose";
+            statusToast.innerHTML = "<span style='color: var(--danger);'>GEPLATZT! Das Huhn hat einen Knochen getroffen.</span>";
+
+            // Alle restlichen Minen offenlegen (wie im echten Casino)
+            for (let r = 0; r < totalLevels; r++) {
+                const rowEl = document.getElementById(`level-${r}`);
+                rowEl.className = 'grid-row past'; // Alles einfrieren
+                
+                const targetMine = minePositions[r];
+                const tile = rowEl.children[targetMine];
+                
+                if (!tile.classList.contains('dead-tile')) {
+                    tile.innerText = "🦴";
+                    tile.style.backgroundColor = "#3a1c24";
+                }
+
+                // Restliche Kacheln leicht ausblenden
+                for (let l = 0; l < lanesPerRow; l++) {
+                    if (l !== targetMine && !rowEl.children[l].classList.contains('success-tile')) {
+                        rowEl.children[l].className = 'tile revealed-bones';
+                    }
+                }
+            }
+
+            resetControlPanel();
+        }
+
+        function executeCashout() {
+            if (!isSessionActive) return;
+
+            isSessionActive = false;
+            let finalWin = activeBet * runningMultiplier;
+            userBalance += finalWin;
+            
+            balanceDisplay.innerText = userBalance.toFixed(2);
+            statusToast.innerHTML = `<span style='color: var(--accent-green);'>Gewinn gesichert! +$${finalWin.toFixed(2)}</span>`;
+
+            // Alle verbleibenden Reihen einfrieren
+            for (let r = 0; r < totalLevels; r++) {
+                document.getElementById(`level-${r}`).className = 'grid-row past';
+            }
+
+            resetControlPanel();
+        }
+
+        function resetControlPanel() {
+            betBtn.style.display = 'block';
+            cashoutBtn.style.display = 'none';
+            betInput.disabled = false;
+            activeBet = 0;
+        }
+
+        // Initiale Erstellung beim Starten der Website
+        buildGridStructure();
+    </script>
+</body>
+</html>
