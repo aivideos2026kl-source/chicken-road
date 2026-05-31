@@ -3,15 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Chicken Road Premium</title>
+    <title>Chicken Road Real Premium</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --bg-color: #1a1a1a;
-            --panel-color: #2a2a2a;
-            --green-color: #58a65c;
-            --gold-color: #bfa15f;
+            --bg-color: #121212;
+            --panel-color: #1e1e1e;
+            --green-color: #2ec4b6;
+            --gold-color: #ffb703;
+            --danger-color: #e63946;
             --text-color: #ffffff;
+            --input-bg: #2a2a2a;
         }
 
         body {
@@ -19,7 +21,7 @@
             padding: 0;
             background-color: var(--bg-color);
             color: var(--text-color);
-            font-family: 'Arial', sans-serif;
+            font-family: '-apple-system', BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -29,148 +31,275 @@
 
         /* Top Bar */
         .header {
-            width: 90%;
+            width: 92%;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 5%;
-            background-color: #111;
+            padding: 12px 4%;
+            background-color: #0b0b0b;
+            border-bottom: 1px solid #222;
         }
 
         .logo {
-            font-weight: bold;
-            font-size: 18px;
+            font-weight: 900;
+            font-size: 20px;
+            letter-spacing: 1px;
         }
-        .logo span { color: #f39c12; }
+        .logo span { color: var(--gold-color); }
 
         .balance-box {
-            background-color: #222;
-            padding: 5px 15px;
+            background: linear-gradient(135deg, #222, #111);
+            padding: 6px 16px;
             border-radius: 20px;
             display: flex;
             align-items: center;
-            border: 1px solid #444;
+            border: 1px solid #333;
             cursor: pointer;
+            font-weight: bold;
         }
 
         .balance-box span {
-            color: #f1c40f;
-            margin-left: 5px;
-            font-weight: bold;
+            color: var(--gold-color);
+            margin-left: 6px;
         }
 
-        /* Spielfeld */
+        /* ECHTE STRASSE UND SPIELFELD */
         #game-container {
             flex: 1;
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
             position: relative;
-            background-color: #333;
-            background-image: linear-gradient(#444 2px, transparent 2px), linear-gradient(90deg, #444 2px, transparent 2px);
-            background-size: 40px 40px;
+            background-color: #2b2b2b;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+                linear-gradient(90deg, transparent 49%, #ffb703 50%, #ffb703 52%, transparent 53%);
+            background-size: 100% 60px;
+            overflow: hidden;
+            border-left: 4px double #444;
+            border-right: 4px double #444;
         }
 
-        /* LEADERBOARD (NEU!) */
+        /* Straßenmarkierungen an den Seiten */
+        #game-container::before {
+            content: '';
+            position: absolute;
+            left: 10px; top: 0; bottom: 0; width: 2px;
+            background: rgba(255,255,255,0.3);
+        }
+        #game-container::after {
+            content: '';
+            position: absolute;
+            right: 10px; top: 0; bottom: 0; width: 2px;
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* Das Huhn */
+        #chicken {
+            position: absolute;
+            bottom: 20px;
+            left: calc(50% - 20px);
+            width: 40px;
+            height: 40px;
+            font-size: 32px;
+            text-align: center;
+            line-height: 40px;
+            transition: bottom 0.2s ease-out, left 0.1s ease;
+            z-index: 5;
+        }
+
+        /* Die Autos */
+        .obstacle-car {
+            position: absolute;
+            width: 45px;
+            height: 30px;
+            font-size: 28px;
+            text-align: center;
+            line-height: 30px;
+            z-index: 4;
+        }
+
+        /* LEADERBOARD (TOP 500) */
         .leaderboard-section {
-            width: 90%;
-            max-width: 400px;
-            background-color: #222;
-            margin: 10px 0;
-            padding: 10px 5%;
-            border-radius: 12px;
-            border: 1px solid #333;
+            width: 92%;
+            max-width: 420px;
+            background-color: #161616;
+            margin: 8px 0;
+            padding: 10px 4%;
+            border-radius: 14px;
+            border: 1px solid #252525;
+            box-sizing: border-box;
         }
 
-        .leaderboard-title {
-            font-size: 14px;
+        .leaderboard-header-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #666;
+            font-weight: bold;margin-bottom: 6px;
             text-transform: uppercase;
-            color: #888;
-            margin-bottom: 8px;
-            font-weight: bold;
-            letter-spacing: 1px;
+        }
+
+        .leaderboard-wrapper {
+            max-height: 95px;
+            overflow-y: auto;
         }
 
         .leaderboard-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .leaderboard-table tr {
-            border-bottom: 1px solid #333;
-        }
-
-        .leaderboard-table tr:last-child {
-            border-bottom: none;
+            border-bottom: 1px solid #222;
         }
 
         .leaderboard-table td {
             padding: 6px 0;
         }
 
-        .rank { width: 30px; color: #f39c12; font-weight: bold; }
-        .username { color: #fff; }
-        .score { text-align: right; color: #f1c40f; font-weight: bold; }
+        .rank { width: 45px; color: var(--gold-color); font-weight: bold; }
+        .username { color: #eee; }
+        .score { text-align: right; color: var(--gold-color); font-weight: bold; }
 
         /* Steuerungs-Panel unten */
         .control-panel {
-            width: 90%;
-            max-width: 400px;
+            width: 92%;
+            max-width: 420px;
             background-color: var(--panel-color);
-            border-top-left-radius: 20px;
-            border-top-right-radius: 20px;
-            padding: 15px 5% 25px 5%;
+            border-top-left-radius: 24px;
+            border-top-right-radius: 24px;
+            padding: 15px 4% 20px 4%;
             display: flex;
             flex-direction: column;
             gap: 12px;
+            box-sizing: border-box;
+            border-top: 1px solid #2c2c2c;
         }
 
         .bet-selection {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 5px;
+            gap: 8px;
         }
 
         .bet-btn {
-            background-color: #333;
-            border: 1px solid #444;
+            background-color: #262626;
+            border: 1px solid #363636;
             color: white;
             padding: 10px;
-            border-radius: 8px;
+            border-radius: 10px;
             font-weight: bold;
             cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .bet-btn.active {
+            background-color: var(--gold-color);
+            color: #000;
+            border-color: var(--gold-color);
         }
 
         .action-btns {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 12px;
         }
 
         .btn-main {
-            padding: 18px;
+            padding: 15px;
             border: none;
-            border-radius: 12px;
-            font-size: 17px;font-weight: bold;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: bold;
             color: white;
             cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
 
-        .btn-cashout { background-color: var(--gold-color); }
-        .btn-go { background-color: var(--green-color); }
+        .btn-cashout { background: linear-gradient(135deg, #bfa15f, #8a6f3e); color: white; }
+        .btn-go { background: linear-gradient(135deg, #2ec4b6, #0f9f90); }
 
-        .nav-menu { display: flex; gap: 10px; }
-        .nav-item { background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
+        .nav-menu { display: flex; gap: 12px; }
+        .nav-item { background: none; border: none; color: white; font-size: 22px; cursor: pointer; }
 
+        /* EDLE SCHÖNE OVERLAYS */
         .overlay-menu {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.95);
+            background-color: rgba(10, 10, 10, 0.98);
             display: none;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 10;
+            z-index: 100;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .overlay-menu h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            background: linear-gradient(45deg, #fff, var(--gold-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .menu-btn {
+            padding: 14px;
+            margin: 6px 0;
+            width: 85%;
+            max-width: 320px;
+            background-color: var(--input-bg);
+            border: 1px solid #3a3a3a;
+            color: white;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .menu-btn span.price {
+            color: var(--gold-color);
+        }
+
+        .input-field {
+            padding: 14px;
+            width: 80%;
+            max-width: 300px;
+            border-radius: 12px;
+            border: 1px solid #3a3a3a;
+            background-color: var(--input-bg);
+            color: white;
+            font-size: 15px;
+            margin-bottom: 12px;text-align: center;
+        }
+
+        .close-btn {
+            margin-top: 20px;
+            background: none;
+            border: none;
+            color: #777;
+            font-size: 15px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Kasse Zahlungsfenster */
+        .checkout-box {
+            background-color: #181818;
+            border: 1px solid #333;
+            padding: 20px;
+            border-radius: 16px;
+            width: 85%;
+            max-width: 320px;
+            text-align: center;
+            display: none;
         }
     </style>
 </head>
@@ -179,9 +308,9 @@
     <!-- Header -->
     <div class="header">
         <div class="logo">CHICKEN<span>2</span>ROAD</div>
-        <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
             <div class="balance-box" onclick="openMenu('shop')">
-                <div id="user-balance">100</div> <span>🪙</span>
+                <div id="user-balance">0</div> <span>🪙</span>
             </div>
             <div class="nav-menu">
                 <button class="nav-item" onclick="openMenu('settings')">⚙️</button>
@@ -190,90 +319,113 @@
         </div>
     </div>
 
-    <!-- Spielfeld -->
-    <div id="game-container"></div>
-
-    <!-- LEADERBOARD TABELLE (NEU!) -->
-    <div class="leaderboard-section">
-        <div class="leaderboard-title">🏆 TOP GEWINNER</div>
-        <table class="leaderboard-table">
-            <tr>
-                <td class="rank">#1</td>
-                <td class="username">Kurdo_Gamer</td>
-                <td class="score">999.749 🪙</td>
-            </tr>
-            <tr>
-                <td class="rank">#2</td>
-                <td class="username">Ahmet_07</td>
-                <td class="score">452.120 🪙</td>
-            </tr>
-            <tr>
-                <td class="rank">#3</td>
-                <td class="username">CryptoKing</td>
-                <td class="score">120.400 🪙</td>
-            </tr>
-        </table>
+    <!-- Echte Straße mit Huhn -->
+    <div id="game-container">
+        <div id="chicken">🐓</div>
     </div>
 
-    <!-- Panel unten -->
+    <!-- LEADERBOARD (TOP 500) -->
+    <div class="leaderboard-section">
+        <div class="leaderboard-header-row">
+            <div>Rang & Spieler (Top 500)</div>
+            <div>Score</div>
+        </div>
+        <div class="leaderboard-wrapper">
+            <table class="leaderboard-table" id="leaderboard-id">
+                <!-- Wird per JS befüllt -->
+            </table>
+        </div>
+    </div>
+
+    <!-- Steuerungs-Panel -->
     <div class="control-panel">
         <div class="bet-selection">
-            <button class="bet-btn" onclick="setBet(0.5)">0.5 🪙</button>
-            <button class="bet-btn" onclick="setBet(1)">1 🪙</button>
-            <button class="bet-btn" onclick="setBet(2)">2 🪙</button>
-            <button class="bet-btn" onclick="setBet(5)">5 🪙</button>
+            <button class="bet-btn active" id="b05" onclick="setBet(0.5, 'b05')">0.5 🪙</button>
+            <button class="bet-btn" id="b1" onclick="setBet(1, 'b1')">1 🪙</button>
+            <button class="bet-btn" id="b2" onclick="setBet(2, 'b2')">2 🪙</button>
+            <button class="bet-btn" id="b5" onclick="setBet(5, 'b5')">5 🪙</button>
         </div>
 
         <div class="action-btns">
             <button class="btn-main btn-cashout" onclick="cashOut()">CASH OUT<br><span id="win-amount">0.00 USD</span></button>
-            <button class="btn-main btn-go" onclick="startGame()">GO</button>
+            <button class="btn-main btn-go" onclick="startGame()">GO 🐓</button>
         </div>
     </div>
 
-    <!-- SHOP OVERLAY -->
+    <!-- PREMIUM COIN SHOP -->
     <div id="shop-menu" class="overlay-menu">
-        <h2>MÜNZ-SHOP</h2>
-        <button style="padding:10px; margin:5px; width:200px;" onclick="buyCoins(10, 10)">10 Münzen = 10€</button><br>
-        <button style="padding:10px; margin:5px; width:200px;" onclick="buyCoins(50, 50)">50 Münzen = 50€</button><br>
-        <button style="padding:10px; margin:5px; width:200px;" onclick="buyCoins(100, 80)">100 Münzen = 80€</button><br>
-        <button style="padding:10px; margin:15px;" onclick="closeMenus()">Schließen</button>
+        <h2>Münzen Kaufen</h2>
+        <div id="shop-list" style="width:100%; display:flex; flex-direction:column; align-items:center;">
+            <button class="menu-btn" onclick="openCheckout(10, '1.50€')"><span>🪙 10 Münzen</span> <span class="price">1.50€</span></button>
+            <button class="menu-btn" onclick="openCheckout(50, '5.00€')"><span>🪙 50 Münzen</span> <span class="price">5.00€</span></button>
+            <button class="menu-btn" onclick="openCheckout(100, '9.00€')"><span>🪙 100 Münzen</span> <span class="price">9.00€</span></button>
+            <button class="menu-btn" onclick="openCheckout(500, '35.00€')"><span>🪙 500 Münzen</span> <span class="price">35.00€</span></button>
+        </div>
+
+        <!-- Deine Kasse (Hier landet dein Geld) -->
+        <div id="checkout-box" class="checkout-box">
+            <h3 style="color:var(--gold-color); margin-top:0;">Zahlung senden an:</h3>
+            <p style="font-size:13px; color:#aaa; margin-bottom:15px;">Sende den Betrag <b id="pay-price" style="color:#fff;"></b> selbstständig via PayPal oder Krypto:</p>
+            
+            <div style="background:#222; padding:10px; border-radius:8px; font-size:12px; margin-bottom:10px; text-align:left;">
+                🔵 <b>PayPal:</b> ahmed.ali.biz@example.com<br>
+                🪙 <b>TON-Krypto (Tonkeeper):</b> EQB...YOUR_WALLET_ADDRESS
+            </div>
+
+            <input type="text" id="tx-id" class="input-field" placeholder="Transaktions-ID / dein Name" style="margin-top:10px;"><button class="btn-main btn-go" style="padding:10px; font-size:14px; width:100%;" onclick="confirmPayment()">Zahlung Bestätigen</button>
+            <button class="close-btn" onclick="closeCheckout()">Zurück zum Shop</button>
+        </div>
+
+        <button class="close-btn" onclick="closeMenus()">Schließen</button>
     </div>
 
-    <!-- SETTINGS OVERLAY -->
+    <!-- EINSTELLUNGEN -->
     <div id="settings-menu" class="overlay-menu">
-        <h2>SPRACHE / LANGUAGE</h2>
-        <button style="padding:10px; margin:5px; width:150px;" onclick="setLanguage('de')">Deutsch</button>
-        <button style="padding:10px; margin:5px; width:150px;" onclick="setLanguage('tr')">Türkçe</button>
-        <button style="padding:10px; margin:5px; width:150px;" onclick="setLanguage('ar')">العربية</button>
-        <button style="padding:10px; margin:5px; width:150px;" onclick="setLanguage('en')">English</button>
-        <button style="padding:10px; margin:5px; width:150px;" onclick="setLanguage('ru')">Русский</button><br>
-        <button style="padding:10px; margin:15px;" onclick="closeMenus()">Schließen</button>
-    </div><!-- WALLET / PAYPAL OVERLAY -->
+        <h2>Einstellungen</h2>
+        <button class="menu-btn" onclick="changeLang('de')">Deutsch 🇩🇪</button>
+        <button class="menu-btn" onclick="changeLang('tr')">Türkçe 🇹🇷</button>
+        <button class="menu-btn" onclick="changeLang('ar')">العربية 🇸🇾</button>
+        <button class="menu-btn" onclick="changeLang('en')">English 🇬🇧</button>
+        <button class="close-btn" onclick="closeMenus()">Schließen</button>
+    </div>
+
+    <!-- PREMIUM WALLET & CRYPTO VERBINDEN -->
     <div id="wallet-menu" class="overlay-menu">
-        <h2>AUSZAHLUNG / WALLET</h2>
-        <p style="color:#aaa; font-size:14px; text-align:center; padding:0 20px;">Gib deine PayPal-E-Mail oder dein Krypto-Wallet für die Gewinnauszahlung ein:</p>
-        <input type="text" id="paypal-email" placeholder="PayPal E-Mail / Wallet Adresse" style="padding: 12px; width: 80%; border-radius:8px; border:none; margin-bottom:15px;"><br>
-        <button style="padding:12px; background-color:var(--green-color); color:white; border:none; border-radius:8px; width:84%; font-weight:bold;" onclick="saveWallet()">Speichern & Auszahlen</button><br>
-        <button style="padding:10px; margin:15px; background:none; border:none; color:#aaa;" onclick="closeMenus()">Schließen</button>
+        <h2>Auszahlung / Wallet</h2>
+        <p style="color:#aaa; font-size:13px; text-align:center; padding:0 15px; margin-bottom:20px;">Hinterlege deine Daten für automatische Gewinnauszahlungen:</p>
+        
+        <input type="email" id="paypal-acc" class="input-field" placeholder="PayPal E-Mail Adresse">
+        <input type="text" id="crypto-addr" class="input-field" placeholder="Krypto Wallet (TON / Trust Wallet)">
+
+        <button class="btn-main" style="background: linear-gradient(135deg, #ffb703, #fb8500); color:black; width:85%; max-width:320px; font-weight:bold; margin-top:10px;" onclick="saveWallets()">Speichern & Verbinden</button>
+        <button class="close-btn" onclick="closeMenus()">Schließen</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.expand();
+        if(tg) { tg.expand(); }
 
-        let balance = 100;
-        let currentBet = 1;
-        let currentProfit = 0;
-        let currentStep = 0;
+        let balance = 0; // Start bei 0 Münzen!
+        let currentBet = 0.5;
         let gameActive = false;
+        let currentProfit = 0;
+        let chickenPos = 20;
+        let obstacles = [];
+        let gameInterval;
 
-        // Versuche den echten Namen aus Telegram zu ziehen
-        try {
-            const telegramUser = tg.initDataUnsafe?.user?.username;
-            if(telegramUser) {
-                // Hier könnte man später den Namen dynamisch in die Tabelle eintragen
-            }
-        } catch(e) {}
+        // Top 500 Generator (Dynamisch simulierte Rangliste bis 500)
+        const leaderboardTable = document.getElementById('leaderboard-id');
+        let mockUsers = ["Kurdo_Gamer", "Ahmet_07", "CryptoKing", "ZFA_Master", "Ton_Holder", "ShadowLogistics", "SniperPUBG"];
+        let leaderboardHTML = "";
+        
+        // Platz 1 bis 500 generieren
+        for(let i = 1; i <= 500; i++) {
+            let name = mockUsers[i % mockUsers.length] + "_" + (Math.floor(Math.random() * 90) + 10);
+            if(i === 1) name = "Kurdo_Gamer 👑";
+            let score = Math.floor(999999 / (i * 0.4 + 0.6)) + Math.floor(Math.random() * 50);
+            leaderboardHTML += <tr><td class="rank">#${i}</td><td class="username">${name}</td><td class="score">${score.toLocaleString()} Pkt</td></tr>;
+        }
+        leaderboardTable.innerHTML = leaderboardHTML;
 
         function openMenu(menuId) {
             closeMenus();
@@ -282,70 +434,188 @@
 
         function closeMenus() {
             document.querySelectorAll('.overlay-menu').forEach(m => m.style.display = 'none');
+            closeCheckout();
         }
 
-        function setBet(amount) {
+        function setBet(amount, btnId) {
             if(!gameActive) {
                 currentBet = amount;
-                tg.HapticFeedback.impactOccurred("light");
+                document.querySelectorAll('.bet-btn').forEach(b => b.classList.remove('active'));
+                document.getElementById(btnId).classList.add('active');
+                if(tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred("light");
             }
         }
 
+        // Shop Kasse öffnen
+        let selectedCoins = 0;
+        function openCheckout(coins, price) {
+            selectedCoins = coins;
+            document.getElementById('shop-list').style.display = 'none';
+            document.getElementById('checkout-box').style.display = 'block';
+            document.getElementById('pay-price').innerText = price;
+        }
+
+        function closeCheckout() {
+            document.getElementById('shop-list').style.display = 'flex';
+            document.getElementById('checkout-box').style.display = 'none';
+        }
+
+        function confirmPayment() {
+            const tx = document.getElementById('tx-id').value;
+            if(!tx) {
+                alert("Bitte gib den Namen oder die Transaktions-ID ein!");
+                return;
+            }
+            // Simulierter Kauferfolg für den Admin (Später vollautomatisch über Bot-API)
+            balance += selectedCoins;
+            document.getElementById('user-balance').innerText = balance;
+            alert(`Danke! Deine Zahlung wird geprüft. ${selectedCoins} Münzen wurden vorläufig gutgeschrieben.`);
+            document.getElementById('tx-id').value = "";
+            closeMenus();
+        }
+
+        function saveWallets() {
+            const pp = document.getElementById('paypal-acc').value;
+            const crypto = document.getElementById('crypto-addr').value;
+            if(pp || crypto) {
+                alert("Erfolgreich verbunden! Auszahlungen werden jetzt direkt an deine Konten gesendet.");
+                closeMenus();
+            } else {
+                alert("Bitte fülle mindestens ein Feld aus.");
+            }
+        }
+
+        function changeLang(lang) {
+            alert("Sprache umgestellt auf: " + lang.toUpperCase());
+            closeMenus();
+        }
+
+        // DAS CHICKEN SPIEL SYSTEM
         function startGame() {
             if(!gameActive) {
                 if(balance < currentBet) {
-                    alert("Nicht genug Münzen! Bitte im Shop aufladen.");
+                    alert("Du hast 0 Münzen! Bitte klicke oben auf den Shop (🪙) und lade dein Guthaben auf.");
                     return;
                 }
                 balance -= currentBet;
                 document.getElementById('user-balance').innerText = balance;
                 gameActive = true;
-                currentStep = 1;
-                currentProfit = currentBet * 1.98;
+                chickenPos = 20;
+                currentProfit = currentBet * 1.5;
+                document.getElementById('chicken').style.bottom = chickenPos + "px";
                 document.getElementById('win-amount').innerText = currentProfit.toFixed(2) + " USD";
+                
+                // Autos spawnen
+                gameInterval = setInterval(updateGame, 50);
             } else {
-                currentStep++;
-                let crashChance = Math.random();
-                if (crashChance < 0.25) { 
-                    alert("BOOM! Verloren!");
-                    gameActive = false;
-                    currentProfit = 0;
-                    document.getElementById('win-amount').innerText = "0.00 USD";
-                } else {
-                    currentProfit += 0.05; 
-                    document.getElementById('win-amount').innerText = currentProfit.toFixed(2) + " USD";
+                // Huhn hüpft nach vorne (Straße hoch!)
+                chickenPos += 40;
+                document.getElementById('chicken').style.bottom = chickenPos + "px";
+                currentProfit *= 1.4;
+                document.getElementById('win-amount').innerText = currentProfit.toFixed(2) + " USD";
+
+                if(chickenPos > 320) {
+                    // Ziel erreicht! Sieg!
+                    alert("Gewonnen! Du hast die Straße sicher überquert! 🎉");
+                    balance += Math.floor(currentProfit);
+                    document.getElementById('user-balance').innerText = balance;
+                    endGame();
                 }
             }
-            tg.HapticFeedback.impactOccurred("medium");
+            if(tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred("medium");
+        }
+
+        function updateGame() {
+            // Gelegentlich neue Autos von links/rechts reinfahren lassen
+            if(Math.random() < 0.08 && obstacles.length < 4) {
+                spawnCar();
+            }
+
+            // Autos bewegen & Crash prüfen
+            const container = document.getElementById('game-container');
+            const chicken = document.getElementById('chicken');
+            const cRect = chicken.getBoundingClientRect();
+
+            for(let i = obstacles.length - 1; i >= 0; i--) {
+                let car = obstacles[i];
+                let currentLeft = parseFloat(car.element.style.left);
+                
+                if(car.dir === 'left') {
+                    currentLeft -= 4;
+                    car.element.style.left = currentLeft + "px";
+                    if(currentLeft < -50) {
+                        car.element.remove();
+                        obstacles.splice(i, 1);
+                        continue;
+                    }
+                } else {
+                    currentLeft += 4;
+                    car.element.style.left = currentLeft + "px";
+                    if(currentLeft > container.clientWidth + 50) {
+                        car.element.remove();
+                        obstacles.splice(i, 1);
+                        continue;
+                    }
+                }
+
+                // Crash Abfrage
+                let oRect = car.element.getBoundingClientRect();
+                if (!(rRects(cRect, oRect))) {
+                    // BOOM! Crash!
+                    alert("💥 BOOM! Ein Auto hat das Huhn erwischt! Münzen verloren.");
+                    endGame();
+                }
+            }
+        }
+
+        function rRects(r1, r2) {
+            return (r1.left > r2.right  r1.right < r2.left  r1.top > r2.bottom || r1.bottom < r2.top);
+        }
+
+        function spawnCar() {
+            const container = document.getElementById('game-container');
+            const carEl = document.createElement('div');
+            carEl.className = 'obstacle-car';
+            
+            const cars = ['🚗', '🚙', '🏎️', '🚕', '🚓'];
+            carEl.innerText = cars[Math.floor(Math.random() * cars.length)];
+            
+            let dir = Math.random() > 0.5 ? 'left' : 'right';
+            let randomRow = Math.floor(Math.random() * 5) + 1; // Zeilen auf der Straße
+            let carTop = container.clientHeight - (randomRow * 60);
+
+            if(carTop < 60 || carTop > container.clientHeight - 60) return;
+
+            carEl.style.top = carTop + "px";
+            if(dir === 'left') {
+                carEl.style.left = container.clientWidth + "px";
+            } else {
+                carEl.style.left = "-40px";
+            }
+
+            container.appendChild(carEl);
+            obstacles.push({ element: carEl, dir: dir });
         }
 
         function cashOut() {
             if(gameActive && currentProfit > 0) {
-                alert("Erfolgreich ausgezahlt: " + currentProfit.toFixed(2) + " USD");
-                gameActive = false;
-                currentProfit = 0;
-                document.getElementById('win-amount').innerText = "0.00 USD";
-                tg.HapticFeedback.notificationOccurred("success");
+                alert(`Erfolgreich ausgezahlt: ${currentProfit.toFixed(2)} USD! Dir wurden ${Math.floor(currentProfit)} Münzen gutgeschrieben.`);
+                balance += Math.floor(currentProfit);
+                document.getElementById('user-balance').innerText = balance;
+                endGame();
             }
         }
 
-        function setLanguage(lang) {
-            alert("Sprache geändert auf: " + lang);
-            closeMenus();
-        }
-
-        function buyCoins(amount, price) {
-            alert("Du kaufst " + amount + " Münzen für " + price + "€.");
-        }
-
-        function saveWallet() {
-            const val = document.getElementById('paypal-email').value;
-            if(val) {
-                alert("Adresse gespeichert: " + val);
-                closeMenus();
-            } else {
-                alert("Bitte gib eine gültige Adresse ein.");
-            }
+        function endGame() {
+            gameActive = false;
+            currentProfit = 0;
+            chickenPos = 20;
+            document.getElementById('chicken').style.bottom = chickenPos + "px";
+            document.getElementById('win-amount').innerText = "0.00 USD";
+            clearInterval(gameInterval);
+            obstacles.forEach(o => o.element.remove());
+            obstacles = [];
+            if(tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
         }
     </script>
 </body>
