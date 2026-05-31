@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Chicken Road Game</title>
+    <title>Coin Flip Premium</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
@@ -247,6 +247,20 @@
             margin-bottom: 15px;
             line-height: 1.4;
         }
+        .btn-contact {
+            background-color: #0088cc;
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+            margin-bottom: 20px;
+        }
         .coupon-group {
             display: flex;
             gap: 10px;
@@ -332,6 +346,8 @@
             <div class="shop-title">Münzen aufladen via Code</div>
             <div class="shop-desc">Kaufe dir bei unserem Support einen Auflade-Code und gib ihn hier ein, um sofort Spielmünzen zu erhalten.</div>
             
+            <a href="https://t.me/modaviva2026" target="_blank" class="btn-contact">💬 Jetzt Support anschreiben & kaufen</a>
+
             <div class="coupon-group">
                 <input type="text" id="coupon-code" placeholder="Z.B. T5-1-ABC123">
                 <button class="redeem-btn" onclick="redeemDynamicCode()">Einlösen</button>
@@ -387,7 +403,27 @@
             coinElement.style.transition = 'none';
             coinElement.className = 'coin';
             
-            const coinResult = Math.random() < 0.5 ? 'Kopf' : 'Zahl';
+            // --- NEUE DYNAMISCHE GLÜCKSSPIEL-LOGIK ---
+            // Wir werfen eine zufällige Prozentzahl zwischen 15% und 25% bei jedem Klick, 
+            // damit es absolut unvorhersehbar ist (mal nach 2, 4, 5 oder 6 Drehs).
+            const dynamicChance = (Math.random() * (0.25 - 0.15)) + 0.15;
+            let userWins = Math.random() < dynamicChance; 
+            
+            // Absolute Sperre für Gewinne direkt nacheinander!
+            let lastTimeWon = localStorage.getItem('last_spin_won') === 'true';
+            if (userWins && lastTimeWon) {
+                userWins = false; 
+            }
+
+            let coinResult = "";
+            if (userWins) {
+                coinResult = selectedChoice;
+                localStorage.setItem('last_spin_won', 'true');
+            } else {
+                // Zeigt optisch sauber immer das falsche Ergebnis, wenn man verliert
+                coinResult = (selectedChoice === 'Kopf') ? 'Zahl' : 'Kopf';
+                localStorage.setItem('last_spin_won', 'false');
+            }
             
             setTimeout(() => {
                 coinElement.style.transition = 'transform 1.5s ease-out';
@@ -398,16 +434,13 @@
             setTimeout(() => {
                 isFlipsRunning = false;
                 
-                // EXTREM NIEDRIGE GEWINNCHANCE: 0.5% (0.005)
-                const userHasLuck = Math.random() < 0.005; 
-                
-                if (selectedChoice === coinResult && userHasLuck) {
+                if (userWins) {
                     euros += 2.00;
-                    if (tg && tg.showAlert) tg.showAlert(`🎉 Unglaubliches Glück! Münze zeigt ${coinResult}. Du gewinnst 2.00 €!`);
-                    else alert(`🎉 Unglaubliches Glück! Münze zeigt ${coinResult}. Du gewinnst 2.00 €!`);
+                    if (tg && tg.showAlert) tg.showAlert(`🎉 Richtig getippt! Es ist ${coinResult}. Du gewinnst 2.00 €!`);
+                    else alert(`🎉 Richtig getippt! Es ist ${coinResult}. Du gewinnst 2.00 €!`);
                 } else {
-                    if (tg && tg.showAlert) tg.showAlert(`❌ Leider kein Gewinn! Die Münze zeigt ${coinResult}.`);
-                    else alert(`❌ Leider kein Gewinn! Die Münze zeigt ${coinResult}.`);
+                    if (tg && tg.showAlert) tg.showAlert(`❌ Leider falsch getippt! Die Münze zeigt ${coinResult}.`);
+                    else alert(`❌ Leider falsch getippt! Die Münze zeigt ${coinResult}.`);
                 }
                 updateUI();
             }, 1550);
