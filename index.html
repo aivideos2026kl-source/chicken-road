@@ -43,7 +43,7 @@
             
             const coinElement = document.getElementById('coin-element');
             
-            // Animation zurücksetzen, damit sie JEDES MAL neu startet
+            // Animation zurücksetzen
             coinElement.style.transition = 'none';
             coinElement.className = 'coin';
             
@@ -59,8 +59,7 @@
             setTimeout(() => {
                 isFlipsRunning = false;
                 
-                // --- EXTREM NIEDRIGE GEWINNCHANCE ---
-                // 0.005 bedeutet genau 0,5% zusätzliche Gewinnchance bei richtigem Tipp!
+                // EXTREM NIEDRIGE GEWINNCHANCE: 0.5% zusätzliche Chance bei richtigem Tipp!
                 const userHasLuck = Math.random() < 0.005; 
                 
                 if (selectedChoice === coinResult && userHasLuck) {
@@ -164,7 +163,6 @@
             else alert(msg);
         }
 
-        // Starten beim Laden
         window.onload = function() {
             updateUI();
             checkAdminStatus();
