@@ -3,362 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chicken Road - Simulator</title>
+    <title>Chicken Road - Kacheln Original</title>
     <style>
         body {
             margin: 0;
-            padding: 0;
-            background-color: #1a1a1a;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            background-color: #0f172a;
+            font-family: 'Arial', sans-serif;
             color: #fff;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             min-height: 100vh;
-            user-select: none;
         }
 
         #game-container {
-            width: 400px;
-            background: #2a2a2a;
+            width: 100%;
+            max-width: 450px;
+            background: #1e293b;
             border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
             padding: 20px;
-            text-align: center;
-            border: 2px solid #3a3a3a;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            box-sizing: border-box;
         }
 
-        .header-stats {
+        h2 {
+            text-align: center;
+            margin-top: 0;
+            color: #38bdf8;
+            letter-spacing: 1px;
+        }
+
+        .stats-bar {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 20px;
-            background: #202020;
-            padding: 10px 15px;
+            background: #0f172a;
+            padding: 12px;
             border-radius: 8px;
+            margin-bottom: 20px;
             font-weight: bold;
         }
 
-        #balance { color: #4caf50; }
-        #multiplier-display { 
-            font-size: 2rem; 
-            color: #ffeb3b; 
+        #balance { color: #4ade80; }
+        #multiplier-box {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #facc15;
             margin: 15px 0;
-            font-weight: 800;
-            text-shadow: 0 0 10px rgba(255,235,59,0.3);
         }
 
-        /* Das Spielfeld */
-        #road-map {
-            height: 240px;
-            background: #4caf50; /* Gras */
+        /* Das Spielfeld - Von unten nach oben */
+        #grid {
+            display: flex;
+            flex-direction: column-reverse; /* Damit Reihe 1 unten ist */
+            gap: 8px;
+            background: #334155;
+            padding: 12px;
             border-radius: 12px;
-            position: relative;
-            overflow: hidden;
-            border: 4px solid #1f1f1f;
             margin-bottom: 20px;
         }
 
-        .road {
-            position: absolute;
-            left: 0;
-            width: 100%;
-            height: 60px;
-            background: #333;
-            border-top: 2px dashed #555;
-            border-bottom: 2px dashed #555;
-        }
-        #road-1 { top: 40px; }
-        #road-2 { top: 140px; }
-
-        /* Spiel-Objekte */
-        #chicken {
-            width: 32px;
-            height: 32px;
-            font-size: 28px;
-            line-height: 32px;
-            position: absolute;
-            left: 184px;
-            bottom: 10px;
-            transition: bottom 0.1s ease, left 0.05s linear;
-            z-index: 10;
+        .row {
+            display: flex;
+            gap: 8px;
+            opacity: 0.4; /* Inaktive Reihen sind ausgegraut */
+            pointer-events: none;
         }
 
-        .car {
-            position: absolute;
-            width: 40px;
-            height: 25px;
-            font-size: 24px;
-            line-height: 25px;
-            z-index: 5;
+        .row.active {
+            opacity: 1;
+            pointer-events: auto;
         }
+
+        .row.completed {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .tile {
+            flex: 1;
+            height: 50px;
+            background: #475569;
+            border: 2px solid #64748b;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .row.active .tile:hover {
+            background: #64748b;
+            transform: scale(1.02);
+        }
+
+        /* Zustand der Kacheln */
+        .tile.safe { background: #16a34a !important; border-color: #4ade80; }
+        .tile.mine { background: #dc2626 !important; border-color: #f87171; }
 
         /* Steuerung */
-        .controls {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 10px;
-        }
-
-        button {
-            border: none;
-            padding: 15px;
-            font-size: 1rem;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: transform 0.1s, filter 0.2s;
-        }
-
-        button:active { transform: scale(0.96); }
-
-        #btn-step {
-            background: #ff9800;
-            color: white;
-            grid-column: span 2;
-            font-size: 1.2rem;
-        }
-        #btn-step:disabled { background: #555; cursor: not-allowed; }
-
-        #btn-cashout { background: #4caf50; color: white; }
-        #btn-cashout:disabled { background: #335535; color: #aaa; cursor: not-allowed; }
-
-        #btn-start { background: #2196f3; color: white; }
-
-        .input-group {
-            margin: 15px 0;
+        .input-area {
             display: flex;
-            justify-content: center;
-            align-items: center;
             gap: 10px;
+            margin-bottom: 15px;
+            justify-content: space-between;
+            align-items: center;
         }
 
         input {
-            width: 80px;
-            padding: 8px;
-            background: #1a1a1a;
-            border: 1px solid #444;
+            width: 100px;
+            padding: 10px;
+            background: #0f172a;
+            border: 1px solid #475569;
             color: white;
-            border-radius: 4px;
+            border-radius: 6px;
+            font-size: 1rem;
             text-align: center;
-            font-size: 1fr;
         }
 
-        #status-message {
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        #start-btn { background: #3b82f6; color: white; }
+        #start-btn:hover { background: #2563eb; }
+        
+        #cashout-btn { background: #10b981; color: white; display: none; }
+        #cashout-btn:hover { background: #059669; }
+
+        #status {
+            text-align: center;
+            font-weight: bold;
             height: 20px;
             margin-top: 10px;
-            font-weight: bold;
-            font-size: 0.95rem;
         }
     </style>
-</head>
-<body>
-
-    <div id="game-container">
-        <h2>CHICKEN ROAD</h2>
-        
-        <div class="header-stats">
-            <div>Guthaben: <span id="balance">1000</span> Pkt</div>
-            <div>Einsatz: <span id="current-bet-display">0</span></div>
-        </div>
-
-        <div id="road-map">
-            <!-- Die Straßen -->
-            <div class="road" id="road-1"></div>
-            <div class="road" id="road-2"></div>
-            
-            <!-- Das Huhn -->
-            <div id="chicken">🐓</div>
-        </div>
-
-        <div id="multiplier-display">x1.00</div>
-        <div id="status-message">Setze deinen Einsatz und starte!</div>
-
-        <div class="input-group">
-            <label for="bet-input">Einsatz:</label>
-            <input type="number" id="bet-input" value="100" min="10">
-        </div>
-
-        <div class="controls">
-            <button id="btn-start" onclick="startGame()">Runde Starten</button>
-            <button id="btn-cashout" onclick="cashOut()" disabled>Cash Out</button>
-            <button id="btn-step" onclick="moveChicken()" disabled>SCHRITT VORWÄRTS (Risiko!)</button>
-        </div>
-    </div>
-
-    <script>
-        let balance = 1000;
-        let currentBet = 0;
-        let currentMultiplier = 1.00;
-        let chickenY = 10; // Startposition unten
-        let isPlaying = false;
-        let gameLoopInterval;
-        let cars = [];
-
-        const chicken = document.getElementById('chicken');
-        const multiplierDisplay = document.getElementById('multiplier-display');
-        const balanceDisplay = document.getElementById('balance');
-        const betDisplay = document.getElementById('current-bet-display');
-        const statusMessage = document.getElementById('status-message');
-        const betInput = document.getElementById('bet-input');
-
-        const btnStart = document.getElementById('btn-start');
-        const btnCashout = document.getElementById('btn-cashout');
-        const btnStep = document.getElementById('btn-step');
-
-        // Auto-Klasse für die Hindernisse
-        class Car {
-            constructor(row) {
-                this.row = row; // 1 oder 2 (obere oder untere Straße)
-                this.y = row === 1 ? 155 : 55; // Y-Pixelhöhe auf dem Feld
-                this.speed = (Math.random() * 2 + 1.5) * (row === 1 ? 1 : -1); // Richtung je nach Spur
-                this.x = this.speed > 0 ? -40 : 440;
-                
-                this.element = document.createElement('div');
-                this.element.className = 'car';
-                this.element.innerText = '🚗';
-                document.getElementById('road-map').appendChild(this.element);
-            }
-
-            update() {
-                this.x += this.speed;
-                this.element.style.left = this.x + 'px';
-                this.element.style.top = this.y + 'px';
-
-                // Am Rand wieder zurücksetzen
-                if (this.speed > 0 && this.x > 420) this.x = -40;
-                if (this.speed < 0 && this.x < -40) this.x = 420;
-            }
-
-            remove() {
-                this.element.remove();
-            }
-        }
-
-        function startGame() {
-            let bet = parseInt(betInput.value);
-            if (isNaN(bet) || bet > balance || bet <= 0) {
-                statusMessage.innerHTML = "<span style='color: #f44336;'>Ungültiger Einsatz!</span>";
-                return;
-            }
-
-            // Reset Variablen
-            balance -= bet;
-            currentBet = bet;
-            currentMultiplier = 1.00;
-            chickenY = 10;
-            isPlaying = true;
-            
-            // UI Updates
-            balanceDisplay.innerText = balance;
-            betDisplay.innerText = currentBet;
-            multiplierDisplay.innerText = "x1.00";
-            multiplierDisplay.style.color = "#ffeb3b";
-            statusMessage.innerText = "Huhn ist gestartet! Mach deinen ersten Schritt.";
-            chicken.innerText = "🐓";
-            chicken.style.bottom = chickenY + 'px';
-
-            btnStart.disabled = true;
-            btnStep.disabled = false;
-            btnCashout.disabled = false;
-
-            // Autos spawnen
-            cars.forEach(c => c.remove());
-            cars = [new Car(1), new Car(1), new Car(2), new Car(2)];
-            // Autos verteilen
-            cars[0].x = 50; cars[1].x = 250;
-            cars[2].x = 100; cars[3].x = 300;
-
-            // Game Loop starten für die flüssige Auto-Bewegung
-            clearInterval(gameLoopInterval);
-            gameLoopInterval = setInterval(updateGame, 20);
-        }
-
-        function moveChicken() {
-            if (!isPlaying) return;
-
-            // Huhn läuft nach oben
-            chickenY += 35;
-            chicken.style.bottom = chickenY + 'px';
-
-            // Multiplikator berechnen (wird mit jedem Schritt exponentiell höher)
-            currentMultiplier += (0.35 + (chickenY / 100));
-            multiplierDisplay.innerText = "x" + currentMultiplier.toFixed(2);
-
-            statusMessage.innerText = "Erfolgreicher Schritt! Weiter oder Cash Out?";
-
-            // Wenn das Huhn oben ankommt, wird es wieder unten hingesetzt (Unendliche Straße)
-            if (chickenY >= 210) {
-                chickenY = 10;
-                chicken.style.bottom = chickenY + 'px';
-            }
-        }
-
-        function updateGame() {
-            if (!isPlaying) return;
-
-            // Autos bewegen
-            cars.forEach(car => {
-                car.update();
-
-                // Kollisionsabfrage (Hitbox Huhn vs Auto)
-                let chickenLeft = 184;
-                let chickenRight = 216;
-                let chickenBottom = chickenY;
-                let chickenTop = chickenY + 32;
-
-                let carLeft = car.x;
-                let carRight = car.x + 40;
-                let carBottom = 240 - car.y - 25; // Umrechnung wegen top/bottom CSS
-                let carTop = 240 - car.y;
-
-                if (chickenRight > carLeft && 
-                    chickenLeft < carRight && 
-                    chickenTop > carBottom && 
-                    chickenBottom < carTop) {
-                    
-                    // CRASH! Huhn wurde überfahren
-                    gameOver();
-                }
-            });
-        }
-
-        function gameOver() {
-            isPlaying = false;
-            clearInterval(gameLoopInterval);
-            
-            chicken.innerText = "💥";
-            multiplierDisplay.innerText = "CRASH! x0.00";
-            multiplierDisplay.style.color = "#f44336";
-            statusMessage.innerHTML = "<span style='color: #f44336;'>Das Huhn wurde erwischt! Einsatz verloren!</span>";
-
-            btnStart.disabled = false;
-            btnStep.disabled = true;
-            btnCashout.disabled = true;
-            currentBet = 0;
-            betDisplay.innerText = 0;
-        }
-
-        function cashOut() {
-            if (!isPlaying) return;
-
-            isPlaying = false;
-            clearInterval(gameLoopInterval);
-
-            let winAmount = Math.floor(currentBet * currentMultiplier);
-            balance += winAmount;
-
-            balanceDisplay.innerText = balance;
-            multiplierDisplay.style.color = "#4caf50";
-            statusMessage.innerHTML = `<span style='color: #4caf50;'>Erfolgreich ausgezahlt! +${winAmount} Punkte!</span>`;
-
-            btnStart.disabled = false;
-            btnStep.disabled = true;
-            btnCashout.disabled = true;
-            currentBet = 0;
-            betDisplay.innerText = 0;
-        }
-    </script>
-</body>
-</html>
+</head
