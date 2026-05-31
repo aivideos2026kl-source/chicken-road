@@ -3,324 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram Coin Flip - Premium</title>
+    <title>Coin Flip - Manuelles Aufladen</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background: #131926;
             color: #ffffff;
             margin: 0;
             padding: 0;
-            display: block;
-            user-select: none;
-            -webkit-user-select: none;
+            text-align: center;
         }
-        
         .header {
             background: linear-gradient(135deg, #1e293b, #0f172a);
             padding: 20px 15px;
-            text-align: center;
             border-bottom: 2px solid #334155;
         }
+        h1 { margin: 0; font-size: 22px; color: #38bdf8; }
+        
+        .tabs { display: table; width: 100%; background: #1e293b; }
+        .tab { display: table-cell; text-align: center; padding: 15px 0; color: #94a3b8; cursor: pointer; width: 50%; font-weight: bold; }
+        .tab.active { color: #38bdf8; border-bottom: 3px solid #38bdf8; background: rgba(56, 189, 248, 0.05); }
 
-        h1 {
-            margin: 0 0 5px 0;
-            font-size: 22px;
-            color: #38bdf8;
-            font-weight: 700;
-        }
+        .content-section { display: none; padding: 20px 15px; }
+        .content-section.active { display: block; }
 
-        .subtitle {
-            font-size: 13px;
-            color: #94a3b8;
-            margin: 0;
-        }
-
-        .tabs {
-            display: table;
-            width: 100%;
-            background: #1e293b;
-            border-bottom: 1px solid #334155;
-        }
-
-        .tab {
-            display: table-cell;
-            text-align: center;
-            padding: 15px 0;
-            color: #94a3b8;
-            font-weight: 600;
-            font-size: 15px;
-            cursor: pointer;
-            width: 50%;
-        }
-
-        .tab.active {
-            color: #38bdf8;
-            border-bottom: 3px solid #38bdf8;
-            background: rgba(56, 189, 248, 0.05);
-        }
-
-        .content-section {
-            display: none;
-            padding: 20px 15px;
-        }
-
-        .content-section.active {
-            display: block;
-        }
-
-        /* Balance Widget */
-        .balance-box {
-            background: linear-gradient(135deg, #0284c7, #0369a1);
-            border-radius: 16px;
-            padding: 20px;
-            text-align: center;
-            margin-bottom: 25px;
-            box-shadow: 0 10px 25px -5px rgba(3, 105, 161, 0.3);
-        }
-
-        .balance-label {
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #bae6fd;
-            margin-bottom: 5px;
-        }
-
-        .balance-value {
-            font-size: 36px;
-            font-weight: 800;
-            color: #ffffff;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-
-        /* Game Elements */
-        .coin-wrapper {
-            margin: 30px auto;
-            width: 130px;
-            height: 130px;
-            perspective: 1000px;
-        }
-
-        .coin-inner {
-            width: 100%;
-            height: 100%;
-            position: relative;
-            transform-style: preserve-3d;
-            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .coin-side {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            backface-visibility: hidden;
+        .balance-container {
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
-            font-weight: bold;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-            border: 4px solid #f59e0b;
-        }
-
-        .coin-heads {
-            background: radial-gradient(circle, #fcd34d, #d97706);
-            color: #78350f;
-        }
-
-        .coin-tails {
-            background: radial-gradient(circle, #fb923c, #ea580c);
-            color: #7c2d12;
-            transform: rotateY(180deg);
-        }
-
-        .coin-text {
-            font-size: 14px;
-            text-transform: uppercase;
-            font-weight: 800;
-            margin-top: 2px;
-            letter-spacing: 0.5px;
-        }
-
-        .choice-container {
-            display: table;
-            width: 100%;
-            margin-bottom: 25px;
-            border-collapse: separate;
-            border-spacing: 10px 0;
-        }
-
-        .choice-btn {
-            display: table-cell;
+            justify-content: space-around;
             background: #1e293b;
-            border: 2px solid #334155;
-            color: #94a3b8;
-            padding: 14px 0;
-            text-align: center;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .choice-btn.selected {
-            background: rgba(56, 189, 248, 0.1);
-            border-color: #38bdf8;
-            color: #38bdf8;
-            box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
-        }
-
-        /* Custom Grid for Bets */
-        .bet-headline {
-            font-size: 14px;
-            color: #94a3b8;
-            text-align: left;
-            margin-bottom: 10px;
-            font-weight: 600;
-            padding-left: 5px;
-        }
-
-        .bet-grid {
-            display: block;
-            margin-bottom: 25px;
-        }
-
-        .bet-row {
-            display: table;
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 8px;
-            margin-bottom: -8px;
-        }
-
-        .bet-card {
-            display: table-cell;
-            width: 33.33%;
-            background: #1e293b;
-            border: 2px solid #334155;
-            border-radius: 12px;
-            padding: 12px 5px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .bet-card.selected {
-            background: rgba(234, 179, 8, 0.1);
-            border-color: #eab308;
-            box-shadow: 0 0 12px rgba(234, 179, 8, 0.2);
-        }
-
-        .bet-value {
-            font-size: 18px;
-            font-weight: 700;
-            color: #ffffff;
-            margin-bottom: 4px;
-        }
-
-        .win-pot {
-            font-size: 11px;
-            color: #4ade80;
-            font-weight: 600;
-            background: rgba(74, 222, 128, 0.1);
-            padding: 3px 6px;
-            border-radius: 6px;
-            display: inline-block;
-        }
-
-        .action-btn {
-            background: linear-gradient(135deg, #eab308, #ca8a04);
-            color: #451a03;
-            border: none;
-            width: 100%;
-            padding: 16px;
-            font-size: 18px;
-            font-weight: 700;
-            border-radius: 14px;
-            cursor: pointer;
-            box-shadow: 0 6px 20px rgba(234, 179, 8, 0.3);
-            transition: transform 0.1s;
-        }
-
-        .action-btn:active {
-            transform: scale(0.98);
-        }
-
-        /* Shop Elements */
-        .shop-list {
-            display: block;
-        }
-
-        .shop-item {
-            background: #1e293b;
-            border: 1px solid #334155;
-            border-radius: 14px;
             padding: 15px;
-            margin-bottom: 12px;
-            display: table;
-            width: 100%;
-        }
-
-        .shop-info {
-            display: table-cell;
-            vertical-align: middle;
-            text-align: left;
-        }
-
-        .shop-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: #ffffff;
-            margin-bottom: 2px;
-        }
-
-        .shop-desc {
-            font-size: 12px;
-            color: #64748b;
-        }
-
-        .shop-action {
-            display: table-cell;
-            vertical-align: middle;
-            text-align: right;
-            width: 100px;
-        }
-
-        .buy-btn {
-            background: #22c55e;
-            color: #ffffff;
-            border: none;
-            padding: 10px 16px;
-            font-size: 14px;
-            font-weight: 700;
-            border-radius: 10px;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
-        }
-
-        .buy-btn:active {
-            transform: scale(0.95);
-        }
-
-        /* Rules Box */
-        .rules-box {
-            background: rgba(30, 41, 59, 0.5);
-            border: 1px dashed #334155;
+            margin-bottom: 25px;
             border-radius: 12px;
-            padding: 12px;
-            margin-top: 20px;
-            font-size: 12px;
-            color: #94a3b8;
+            border: 1px solid #334155;
+        }
+        .balance-label { font-size: 12px; color: #94a3b8; text-transform: uppercase; }
+        .balance-value { font-size: 24px; font-weight: bold; margin-top: 5px; }
+        .color-coins { color: #f59e0b; }
+        .color-euro { color: #22c55e; }
+
+        /* Shop & Einlösen */
+        .info-box {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 15px;
             text-align: left;
-            line-height: 1.4;
+            margin-bottom: 20px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .btn-contact {
+            background: #0088cc;
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+            margin-top: 10px;
+        }
+        
+        .code-input-group {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+            margin-top: 25px;
+        }
+        .code-input-group input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background: #0f172a;
+            color: white;
+            font-size: 16px;
+            text-align: center;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+        .btn-redeem {
+            background: #22c55e;
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -328,305 +104,132 @@
 
     <div class="header">
         <h1>Coin Flip Deluxe</h1>
-        <p class="subtitle">Wähle deine Seite, setze Münzen und gewinne!</p>
     </div>
 
     <div class="tabs">
         <div class="tab active" id="tab-game" onclick="switchTab('game')">🎮 Spiel</div>
-        <div class="tab" id="tab-shop" onclick="switchTab('shop')">🛒 Münz-Shop</div>
+        <div class="tab" id="tab-shop" onclick="switchTab('shop')">🛒 Münzen aufladen</div>
     </div>
 
     <div id="section-game" class="content-section active">
-        <div class="balance-box">
-            <div class="balance-label">Dein Guthaben</div>
-            <div class="balance-value"><span id="game-balance">0</span> 🪙</div>
-        </div>
-
-        <div class="coin-wrapper">
-            <div class="coin-inner" id="coin-object">
-                <div class="coin-side coin-heads">
-                    <span>👑</span>
-                    <div class="coin-text">Kopf</div>
-                </div>
-                <div class="coin-side coin-tails">
-                    <span>🔢</span>
-                    <div class="coin-text">Zahl</div>
-                </div>
+        <div class="balance-container">
+            <div>
+                <div class="balance-label">Münzen</div>
+                <div class="balance-value color-coins"><span id="game-coins">0</span> 🪙</div>
+            </div>
+            <div style="border-left: 1px solid #334155; padding-left: 20px;">
+                <div class="balance-label">Guthaben</div>
+                <div class="balance-value color-euro"><span id="game-euros">0.00</span> €</div>
             </div>
         </div>
-
-        <div class="choice-container">
-            <div class="choice-btn selected" id="choice-heads" onclick="selectSide('KOPF')">KOPF</div>
-            <div class="choice-btn" id="choice-tails" onclick="selectSide('ZAHL')">ZAHL</div>
-        </div>
-
-        <div class="bet-headline">Einsatz wählen:</div>
-        <div class="bet-grid">
-            <div class="bet-row">
-                <div class="bet-card selected" onclick="selectBet(1)" id="bet-card-1">
-                    <div class="bet-value">1 🪙</div>
-                    <div class="win-pot">Gewinn: 2</div>
-                </div>
-                <div class="bet-card" onclick="selectBet(2)" id="bet-card-2">
-                    <div class="bet-value">2 🪙</div>
-                    <div class="win-pot">Gewinn: 3</div>
-                </div>
-                <div class="bet-card" onclick="selectBet(3)" id="bet-card-3">
-                    <div class="bet-value">3 🪙</div>
-                    <div class="win-pot">Gewinn: 4</div>
-                </div>
-            </div>
-            <div style="height: 10px;"></div>
-            <div class="bet-row">
-                <div class="bet-card" onclick="selectBet(4)" id="bet-card-4">
-                    <div class="bet-value">4 🪙</div>
-                    <div class="win-pot">Gewinn: 6</div>
-                </div>
-                <div class="bet-card" onclick="selectBet(5)" id="bet-card-5">
-                    <div class="bet-value">5 🪙</div>
-                    <div class="win-pot">Gewinn: 7</div>
-                </div>
-                <div class="bet-card" onclick="selectBet(6)" id="bet-card-6">
-                    <div class="bet-value">6 🪙</div>
-                    <div class="win-pot">Gewinn: 9</div>
-                </div>
-            </div>
-            <div style="height: 10px;"></div>
-            <div class="bet-row">
-                <div class="bet-card" onclick="selectBet(10)" id="bet-card-10" style="display:table-cell; width:100%;">
-                    <div class="bet-value">10 🪙</div>
-                    <div class="win-pot">Gewinn: 4</div>
-                </div>
-            </div>
-        </div>
-
-        <button class="action-btn" id="flip-action-btn" onclick="startFlip()">Münze werfen!</button>
-        
-        <div class="rules-box">
-            <strong>Risiko-Hinweis:</strong> Wenn deine Vorhersage falsch ist, verlierst du deinen gesamten Einsatz. Die Gewinn-Auszahlungen basieren fest auf den mathematischen Gewinnstufen deines gewählten Einsatzes.
-        </div>
+        <p>Hier ist Platz für dein Münzwurf-Spiel...</p>
     </div>
 
     <div id="section-shop" class="content-section">
-        <div class="balance-box" style="background: linear-gradient(135deg, #16a34a, #15803d); box-shadow: 0 10px 25px -5px rgba(21, 128, 61, 0.3);">
-            <div class="balance-label">Aktuelles Guthaben</div>
-            <div class="balance-value"><span id="shop-balance">0</span> 🪙</div>
+        <div class="balance-container">
+            <div>
+                <div class="balance-label">Münzen</div>
+                <div class="balance-value color-coins"><span id="shop-coins">0</span> 🪙</div>
+            </div>
+            <div style="border-left: 1px solid #334155; padding-left: 20px;">
+                <div class="balance-label">Guthaben</div>
+                <div class="balance-value color-euro"><span id="shop-euros">0.00</span> €</div>
+            </div>
         </div>
 
-        <div class="shop-list">
-            <div class="shop-item">
-                <div class="shop-info">
-                    <div class="shop-title">5 Münzen 🪙</div>
-                    <div class="shop-desc">Starter Pack</div>
-                </div>
-                <div class="shop-action">
-                    <button class="buy-btn" onclick="triggerPurchase(5, 5.00)">5,00 €</button>
-                </div>
-            </div>
+        <div class="info-box">
+            <strong>So kaufst du Münzen:</strong><br>
+            1. Klicke unten auf den Button, um mir privat zu schreiben.<br>
+            2. Sag mir, welches Paket du willst (z.B. 10 Münzen für 10€).<br>
+            3. Bezahle per PayPal oder Krypto.<br>
+            4. Ich schicke dir sofort einen **Code**, den du unten eingeben kannst!
+            
+            <a href="https://t.me/dein_telegram_name" target="_blank" class="btn-contact">💬 Jetzt Münzen privat kaufen</a>
+        </div>
 
-            <div class="shop-item">
-                <div class="shop-info">
-                    <div class="shop-title">10 Münzen 🪙</div>
-                    <div class="shop-desc">Standard Pack</div>
-                </div>
-                <div class="shop-action">
-                    <button class="buy-btn" onclick="triggerPurchase(10, 10.00)">10,00 €</button>
-                </div>
-            </div>
+        <div class="info-box" style="font-size: 12px; color: #94a3b8;">
+            <strong>Preise:</strong> 5 Münzen = 5€ | 10 Münzen = 10€ | 15 Münzen = 12€ | 20 Münzen = 17€ | 40 Münzen = 40€ | 100 Münzen = 80€
+        </div>
 
-            <div class="shop-item">
-                <div class="shop-info">
-                    <div class="shop-title">15 Münzen 🪙</div>
-                    <div class="shop-desc">Bonus Pack (3 € sparen!)</div>
-                </div>
-                <div class="shop-action">
-                    <button class="buy-btn" onclick="triggerPurchase(15, 12.00)">12,00 €</button>
-                </div>
-            </div>
-
-            <div class="shop-item">
-                <div class="shop-info">
-                    <div class="shop-title">20 Münzen 🪙</div>
-                    <div class="shop-desc">Mega Pack (3 € sparen!)</div>
-                </div>
-                <div class="shop-action">
-                    <button class="buy-btn" onclick="triggerPurchase(20, 17.00)">17,00 €</button>
-                </div>
-            </div>
-
-            <div class="shop-item">
-                <div class="shop-info">
-                    <div class="shop-title">40 Münzen 🪙</div>
-                    <div class="shop-desc">Pro Gamer Pack</div>
-                </div>
-                <div class="shop-action">
-                    <button class="buy-btn" onclick="triggerPurchase(40, 40.00)">40,00 €</button>
-                </div>
-            </div>
-
-            <div class="shop-item">
-                <div class="shop-info">
-                    <div class="shop-title">100 Münzen 🪙</div>
-                    <div class="shop-desc">Whale Pack (20 € sparen!)</div>
-                </div>
-                <div class="shop-action">
-                    <button class="buy-btn" onclick="triggerPurchase(100, 80.00)">80,00 €</button>
-                </div>
-            </div>
+        <div class="code-input-group">
+            <label style="display:block; margin-bottom: 8px; font-weight: bold;">Code hier eingeben:</label>
+            <input type="text" id="coupon-code" placeholder="Z.B. COIN-50-ABC">
+            <button class="btn-redeem" onclick="redeemCode()">Code aktivieren</button>
         </div>
     </div>
 
     <script>
-        // Telegram Web App Initialisierung
         const tg = window.Telegram.WebApp;
-        if (tg) {
-            tg.expand();
-            tg.ready();
-        }
+        if (tg) tg.expand();
 
-        // App State
-        let balance = parseInt(localStorage.getItem('coin_flip_balance')) || 0;
-        let selectedSide = 'KOPF';
-        let selectedBetAmount = 1;
-        let isFlipping = false;
+        let coins = parseInt(localStorage.getItem('m_coins')) || 0;
+        let euros = parseFloat(localStorage.getItem('m_euros')) || 0.00;
 
-        // Gewinnstufen-Map definieren (Einsatz -> Gewinn)
-        const payoutStructure = {
-            1: 2,
-            2: 3,
-            3: 4,
-            4: 6,
-            5: 7,
-            6: 9,
-            10: 4
+        // --- DEINE GEHEIMEN CODES (DIESE ERSTELLST NUR DU!) ---
+        // Format: "CODE": Anzahl_der_Münzen
+        // Wichtig: Wenn ein User den Code nutzt, solltest du ihn danach hier löschen und die Datei neu hochladen, damit er nicht doppelt genutzt wird.
+        const validCodes = {
+            "START5": 5,
+            "MEGA10": 10,
+            "BONUS15": 15,
+            "VIP20": 20,
+            "PRO40": 40,
+            "WHALE100": 100
         };
 
-        // UI Displays synchronisieren
-        function refreshUI() {
-            document.getElementById('game-balance').innerText = balance;
-            document.getElementById('shop-balance').innerText = balance;
-            localStorage.setItem('coin_flip_balance', balance);
+        function updateUI() {
+            document.getElementById('game-coins').innerText = coins;
+            document.getElementById('shop-coins').innerText = coins;
+            document.getElementById('game-euros').innerText = euros.toFixed(2);
+            document.getElementById('shop-euros').innerText = euros.toFixed(2);
+            
+            localStorage.setItem('m_coins', coins);
+            localStorage.setItem('m_euros', euros);
         }
 
-        // Tab-Wechsel Logik
         function switchTab(tab) {
-            if (isFlipping) return;
-            
             document.getElementById('tab-game').classList.toggle('active', tab === 'game');
             document.getElementById('tab-shop').classList.toggle('active', tab === 'shop');
-            
             document.getElementById('section-game').classList.toggle('active', tab === 'game');
             document.getElementById('section-shop').classList.toggle('active', tab === 'shop');
         }
 
-        // Seiten-Auswahl (Kopf oder Zahl)
-        function selectSide(side) {
-            if (isFlipping) return;
-            selectedSide = side;
-            document.getElementById('choice-heads').classList.toggle('selected', side === 'KOPF');
-            document.getElementById('choice-tails').classList.toggle('selected', side === 'ZAHL');
-            
-            if (tg && tg.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('light');
-            }
-        }
+        // CODE EINLÖSEN LOGIK
+        function redeemCode() {
+            const inputField = document.getElementById('coupon-code');
+            const enteredCode = inputField.value.trim().toUpperCase();
 
-        // Einsatz-Auswahl aus dem Grid
-        function selectBet(amount) {
-            if (isFlipping) return;
-            selectedBetAmount = amount;
-            
-            // Alle Cards deselektieren
-            const cards = document.querySelectorAll('.bet-card');
-            cards.forEach(card => card.classList.remove('selected'));
-            
-            // Richtige Card selektieren
-            document.getElementById('bet-card-' + amount).classList.add('selected');
-            
-            if (tg && tg.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('light');
-            }
-        }
-
-        // Spiel starten
-        function startFlip() {
-            if (isFlipping) return;
-
-            // Kontostand prüfen
-            if (balance < selectedBetAmount) {
-                if (tg && tg.showAlert) {
-                    tg.showAlert("Du hast nicht genug Münzen! Gehe in den Shop, um dein Guthaben aufzuladen.");
-                } else {
-                    alert("Du hast nicht genug Münzen! Gehe in den Shop, um dein Guthaben aufzuladen.");
-                }
+            if (enteredCode === "") {
+                if (tg && tg.showAlert) tg.showAlert("Bitte gib einen Code ein!");
                 return;
             }
 
-            // Einsatz abziehen
-            isFlipping = true;
-            balance -= selectedBetAmount;
-            refreshUI();
-
-            const coinInner = document.getElementById('coin-object');
-            const flipBtn = document.getElementById('flip-action-btn');
-            
-            flipBtn.disabled = true;
-            flipBtn.style.opacity = '0.6';
-            flipBtn.innerText = "Münze fliegt...";
-
-            // Zufallsergebnis ermitteln (50% Kopf, 50% Zahl)
-            const outcome = Math.random() < 0.5 ? 'KOPF' : 'ZAHL';
-            
-            // Rotationswinkel für flüssige Animation berechnen
-            const baseRotation = 1440; // 4 volle Umdrehungen
-            const finalRotation = outcome === 'KOPF' ? baseRotation : baseRotation + 180;
-            
-            coinInner.style.transform = `rotateY(${finalRotation}deg)`;
-
-            if (tg && tg.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('medium');
-            }
-
-            // Animation abwarten
-            setTimeout(() => {
-                isFlipping = false;
-                flipBtn.disabled = false;
-                flipBtn.style.opacity = '1';
-                flipBtn.innerText = "Münze werfen!";
+            // Prüfen, ob der Code in deiner Liste existiert
+            if (validCodes.hasOwnProperty(enteredCode)) {
+                const coinAmount = validCodes[enteredCode];
                 
-                coinInner.style.transition = 'none';
-                coinInner.style.transform = outcome === 'KOPF' ? 'rotateY(0deg)' : 'rotateY(180deg)';
+                // Münzen gutschreiben
+                coins += coinAmount;
+                updateUI();
                 
-                setTimeout(() => {
-                    coinInner.style.transition = 'transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-                }, 50);
-
-                // Auswertung
-                if (selectedSide === outcome) {
-                    const winAmount = payoutStructure[selectedBetAmount];
-                    balance += winAmount;
-                    refreshUI();
-                    
-                    if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-                    
-                    if (tg && tg.showAlert) {
-                        tg.showAlert(`🎉 Gewonnen! Es ist ${outcome}. Du hast ${winAmount} Münzen erhalten!`);
-                    } else {
-                        alert(`🎉 Gewonnen! Es ist ${outcome}. Du hast ${winAmount} Münzen erhalten!`);
-                    }
+                if (tg && tg.showAlert) {
+                    tg.showAlert(`✅ Erfolg! Du hast ${coinAmount} Münzen erhalten.`);
                 } else {
-                    refreshUI();
-                    if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
-                    
-                    if (tg && tg.showAlert) {
-                        tg.showAlert(`😢 Leider falsch! Es ist ${outcome}. Dein Einsatz ist weg.`);
-                    } else {
-                        alert(`😢 Leider falsch! Es ist ${outcome}. Dein Einsatz ist weg.`);
-                    }
+                    alert(`✅ Erfolg! Du hast ${coinAmount} Münzen erhalten.`);
                 }
-            }, 850);
+                
+                inputField.value = ""; // Feld leeren
+            } else {
+                if (tg && tg.showAlert) {
+                    tg.showAlert("❌ Ungültiger oder bereits verwendeter Code!");
+                } else {
+                    alert("❌ Ungültiger oder bereits verwendeter Code!");
+                }
+            }
         }
 
-        // Shop-Käufe auslösen
-        function triggerPurchase(coins, price) {
-            const message = `Möchtest du das Paket mit ${coins} Münzen für ${price.toFixed(2
+        // Initialisierung
+        updateUI();
+    </script>
+</body>
+</html>
