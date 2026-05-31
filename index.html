@@ -289,7 +289,6 @@
 </head>
 <body>
 
-    <!-- ADMIN BOX -->
     <div id="admin-box">
         <h3>🛠️ Live Code-Generator (Nur für dich):</h3>
         <p>Gib eine Käufer-Nummer ein (z.B. 1, 2, 3...):</p>
@@ -302,13 +301,11 @@
 
     <h1>Coin Flip Premium</h1>
 
-    <!-- TABS NAV -->
     <div class="nav-tabs">
         <button id="tab-game" class="tab-btn active" onclick="switchTab('game')">🎮 Spiel</button>
         <button id="tab-shop" class="tab-btn" onclick="switchTab('shop')">🪙 Münzen aufladen</button>
     </div>
 
-    <!-- MAIN STATS -->
     <div class="stats-container">
         <div class="stat-box">
             <div class="stat-label">Deine Münzen</div>
@@ -320,7 +317,6 @@
         </div>
     </div>
 
-    <!-- SECTION: GAME -->
     <div id="section-game" class="content-section active">
         <div class="game-container">
             <div class="coin-wrapper">
@@ -340,13 +336,11 @@
         <p class="instruction-text">Wähle Kopf oder Zahl. Ein Wurf kostet 1 Münze. Richtiger Tipp gewinnt 2.00 €!</p>
     </div>
 
-    <!-- SECTION: SHOP -->
     <div id="section-shop" class="content-section">
         <div class="shop-box">
             <div class="shop-title">Münzen aufladen via Code</div>
             <div class="shop-desc">Kaufe dir bei unserem Support einen Auflade-Code und gib ihn hier ein, um sofort Spielmünzen zu erhalten.</div>
             
-            <!-- BUTTON NUTZT JETZT DIE OFFIZIELLE TELEGRAM-METHODE -->
             <button class="btn-contact" onclick="openSupportChat()">💬 Jetzt Support anschreiben & kaufen</button>
 
             <div class="coupon-group">
@@ -356,12 +350,10 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT LOGIC -->
     <script>
         const tg = window.Telegram.WebApp;
         if (tg) tg.expand();
 
-        // CONFIGURATION
         const SECRET_SALT = "MEIN_SUPER_GEHEIMES_WORT_123"; 
         const ADMIN_USERNAME = "modaviva2026"; 
 
@@ -378,11 +370,11 @@
         }
 
         function openSupportChat() {
+            // tg.me Link umgeht das Umleitungs-Problem in Telegram effektiv
             if (tg && tg.openTelegramLink) {
-                // Öffnet den Chat sicher direkt in Telegram über die API
-                tg.openTelegramLink("https://t.me/modaviva2026");
+                tg.openTelegramLink("https://tg.me/modaviva2026");
             } else {
-                window.open("https://t.me/modaviva2026", "_blank");
+                window.open("https://tg.me/modaviva2026", "_blank");
             }
         }
 
