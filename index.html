@@ -1,11 +1,352 @@
-    <!-- HIER STARTET JETZT DAS JAVASCRIPT KORREKT IM BROWSER -->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chicken Road Game</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #111827;
+            color: #ffffff;
+            text-align: center;
+            padding: 10px;
+            overflow-x: hidden;
+        }
+        #admin-box {
+            display: none;
+            background-color: #2563eb;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: left;
+            border: 2px solid #3b82f6;
+        }
+        #admin-box h3 {
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+        #admin-box p {
+            font-size: 13px;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+        .admin-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        #buyer-id-input {
+            width: 70px;
+            padding: 5px;
+            border-radius: 6px;
+            border: none;
+            text-align: center;
+            font-size: 16px;
+        }
+        .admin-btn {
+            background-color: #22c55e;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        #admin-codes-list {
+            list-style: none;
+            font-family: monospace;
+            font-size: 14px;
+            background: rgba(0,0,0,0.2);
+            padding: 8px;
+            border-radius: 6px;
+        }
+        .admin-code-text {
+            background: #1e293b;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #f59e0b;
+        }
+        h1 {
+            font-size: 24px;
+            margin: 15px 0;
+            color: #38bdf8;
+        }
+        .nav-tabs {
+            display: flex;
+            background-color: #1f2937;
+            border-radius: 8px;
+            padding: 4px;
+            margin-bottom: 15px;
+        }
+        .tab-btn {
+            flex: 1;
+            background: none;
+            border: none;
+            color: #9ca3af;
+            padding: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+        }
+        .tab-btn.active {
+            background-color: #374151;
+            color: #38bdf8;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .stats-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        .stat-box {
+            flex: 1;
+            background-color: #1f2937;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #374151;
+        }
+        .stat-label {
+            font-size: 11px;
+            color: #9ca3af;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+        }
+        .coin-icon { color: #f59e0b; }
+        .euro-icon { color: #10b981; }
+        .game-container {
+            background-color: #1f2937;
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #374151;
+            margin-bottom: 20px;
+        }
+        .coin-wrapper {
+            perspective: 1000px;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 25px auto;
+        }
+        .coin {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+        }
+        .coin-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            font-weight: bold;
+            border: 8px solid #d97706;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        .coin-front {
+            background: radial-gradient(circle, #fcd34d 0%, #f59e0b 100%);
+            color: #78350f;
+        }
+        .coin-back {
+            background: radial-gradient(circle, #fbbf24 0%, #d97706 100%);
+            color: #78350f;
+            transform: rotateY(180deg);
+        }
+        .animate-head { transform: rotateY(1800deg); }
+        .animate-tail { transform: rotateY(1980deg); }
+        .choice-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .choice-btn {
+            flex: 1;
+            background-color: #374151;
+            border: 2px solid #4b5563;
+            color: white;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .choice-btn.active {
+            background-color: #1e3a8a;
+            border-color: #3b82f6;
+            color: #38bdf8;
+        }
+        .main-btn {
+            width: 100%;
+            background: linear-gradient(to right, #2563eb, #1d4ed8);
+            border: none;
+            color: white;
+            padding: 14px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .main-btn:disabled {
+            opacity: 0.5;
+            cursor:not-allowed;
+        }
+        .instruction-text {
+            font-size: 13px;
+            color: #9ca3af;
+            margin-top: 20px;
+            line-height: 1.4;
+        }
+        .shop-box {
+            background-color: #1f2937;
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #374151;
+            text-align: left;
+        }
+        .shop-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #f59e0b;
+        }
+        .shop-desc {
+            font-size: 13px;
+            color: #9ca3af;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        .coupon-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        #coupon-code {
+            flex: 1;
+            background-color: #374151;
+            border: 1px solid #4b5563;
+            border-radius: 8px;
+            padding: 10px;
+            color: white;
+            font-size: 15px;
+            text-transform: uppercase;
+        }
+        .redeem-btn {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ADMIN BOX -->
+    <div id="admin-box">
+        <h3>🛠️ Live Code-Generator (Nur für dich):</h3>
+        <p>Gib eine Käufer-Nummer ein (z.B. 1, 2, 3...):</p>
+        <div class="admin-input-group">
+            <input type="number" id="buyer-id-input" value="1" min="1" oninput="generateAdminCodes()">
+            <button class="admin-btn" onclick="generateAdminCodes()">Anzeigen</button>
+        </div>
+        <ul id="admin-codes-list"></ul>
+    </div>
+
+    <h1>Coin Flip Premium</h1>
+
+    <!-- TABS NAV -->
+    <div class="nav-tabs">
+        <button id="tab-game" class="tab-btn active" onclick="switchTab('game')">🎮 Spiel</button>
+        <button id="tab-shop" class="tab-btn" onclick="switchTab('shop')">🪙 Münzen aufladen</button>
+    </div>
+
+    <!-- MAIN STATS -->
+    <div class="stats-container">
+        <div class="stat-box">
+            <div class="stat-label">Deine Münzen</div>
+            <div class="stat-value"><span class="coin-icon">🪙</span> <span class="coin-display">0</span></div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Guthaben (Gewinn)</div>
+            <div class="stat-value"><span class="euro-display">0.00</span> €</div>
+        </div>
+    </div>
+
+    <!-- SECTION: GAME -->
+    <div id="section-game" class="content-section active">
+        <div class="game-container">
+            <div class="coin-wrapper">
+                <div id="coin-element" class="coin">
+                    <div class="coin-face coin-front">K</div>
+                    <div class="coin-face coin-back">Z</div>
+                </div>
+            </div>
+
+            <div class="choice-container">
+                <button id="btn-head" class="choice-btn" onclick="selectChoice('Kopf')">Kopf</button>
+                <button id="btn-tail" class="choice-btn" onclick="selectChoice('Zahl')">Zahl</button>
+            </div>
+
+            <button id="flip-trigger-btn" class="main-btn" onclick="flipCoin()">Münze werfen (1 Münze)</button>
+        </div>
+        <p class="instruction-text">Wähle Kopf oder Zahl. Ein Wurf kostet 1 Münze. Richtiger Tipp gewinnt 2.00 €!</p>
+    </div>
+
+    <!-- SECTION: SHOP -->
+    <div id="section-shop" class="content-section">
+        <div class="shop-box">
+            <div class="shop-title">Münzen aufladen via Code</div>
+            <div class="shop-desc">Kaufe dir bei unserem Support einen Auflade-Code und gib ihn hier ein, um sofort Spielmünzen zu erhalten.</div>
+            
+            <div class="coupon-group">
+                <input type="text" id="coupon-code" placeholder="Z.B. T5-1-ABC123">
+                <button class="redeem-btn" onclick="redeemDynamicCode()">Einlösen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
     <script>
         const tg = window.Telegram.WebApp;
         if (tg) tg.expand();
 
         // CONFIGURATION
         const SECRET_SALT = "MEIN_SUPER_GEHEIMES_WORT_123"; 
-        const ADMIN_USERNAME = "modaviva2026"; // Dein Telegram-Username ohne @
+        const ADMIN_USERNAME = "modaviva2026"; 
 
         let coins = parseInt(localStorage.getItem('m_coins')) || 0;
         let euros = parseFloat(localStorage.getItem('m_euros')) || 0.00;
@@ -43,11 +384,9 @@
             
             const coinElement = document.getElementById('coin-element');
             
-            // Animation zurücksetzen
             coinElement.style.transition = 'none';
             coinElement.className = 'coin';
             
-            // Optischer Wurf (50/50 Chance was die Münze anzeigt)
             const coinResult = Math.random() < 0.5 ? 'Kopf' : 'Zahl';
             
             setTimeout(() => {
@@ -59,7 +398,7 @@
             setTimeout(() => {
                 isFlipsRunning = false;
                 
-                // EXTREM NIEDRIGE GEWINNCHANCE: 0.5% zusätzliche Chance bei richtigem Tipp!
+                // EXTREM NIEDRIGE GEWINNCHANCE: 0.5% (0.005)
                 const userHasLuck = Math.random() < 0.005; 
                 
                 if (selectedChoice === coinResult && userHasLuck) {
@@ -74,7 +413,6 @@
             }, 1550);
         }
 
-        // GENERATOR LOGIK FÜR DICH ALS ADMIN
         function checkAdminStatus() {
             let userParam = "unknown";
             if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
