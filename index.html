@@ -1,160 +1,331 @@
-const tg = window.Telegram.WebApp;
-if (tg) tg.expand();
-
-// 1. DEIN GEHEIMES MASTER-WORT (Ändere das in dein privates Wort!)
-const SECRET_SALT = "MEIN_SUPER_GEHEIMES_WORT_123"; 
-
-// 2. DEIN ECHTER TELEGRAM-BENUTZERNAME (Ohne das @-Zeichen!)
-const ADMIN_USERNAME = "DEIN_TELEGRAM_NAME"; 
-
-let coins = parseInt(localStorage.getItem('m_coins')) || 0;
-let euros = parseFloat(localStorage.getItem('m_euros')) || 0.00;
-let selectedChoice = null;
-let isFlipsRunning = false;
-
-function updateUI() {
-    document.querySelectorAll('.coin-display').forEach(el => el.innerText = coins);
-    document.querySelectorAll('.euro-display').forEach(el => el.innerText = euros.toFixed(2));
-    localStorage.setItem('m_coins', coins);
-    localStorage.setItem('m_euros', euros);
-    
-    const playBtn = document.getElementById('play-button');
-    if (coins > 0 && selectedChoice !== null && !isFlipsRunning) {
-        playBtn.disabled = false;
-    } else {
-        playBtn.disabled = true;
-    }
-}
-
-function switchTab(tab) {
-    document.getElementById('tab-game').classList.toggle('active', tab === 'game');
-    document.getElementById('tab-shop').classList.toggle('active', tab === 'shop');
-    document.getElementById('section-game').classList.toggle('active', tab === 'game');
-    document.getElementById('section-shop').classList.toggle('active', tab === 'shop');
-}
-
-function selectChoice(choice) {
-    if (isFlipsRunning) return;
-    selectedChoice = choice;
-    document.getElementById('btn-head').classList.toggle('selected', choice === 'Kopf');
-    document.getElementById('btn-tail').classList.toggle('selected', choice === 'Zahl');
-    updateUI();
-}
-
-function flipCoin() {
-    if (coins < 1 || selectedChoice === null || isFlipsRunning) return;
-    isFlipsRunning = true;
-    coins--;
-    updateUI();
-    const coinElement = document.getElementById('coin-element');
-    coinElement.className = 'coin';
-    const result = Math.random() < 0.5 ? 'Kopf' : 'Zahl';
-    setTimeout(() => {
-        if (result === 'Kopf') coinElement.classList.add('animate-head');
-        else coinElement.classList.add('animate-tail');
-    }, 50);
-    setTimeout(() => {
-        isFlipsRunning = false;
-        if (selectedChoice === result) {
-            euros += 2.00;
-            tg.showAlert(`🎉 Richtig! Es ist ${result}. +2,00 €!`);
-        } else {
-            tg.showAlert(`❌ Schade! Es ist ${result}.`);
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coin Flip - Premium Edition</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #131926;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            text-align: center;
         }
-        updateUI();
-    }, 1550);
-}
-
-// NEUE RECHEN-LOGIK: Berechnet Code aus Datum + Münzen + KäuferNummer + Passwort
-function generateUniqueCode(coinAmount, buyerNo) {
-    const todayStr = new Date().toISOString().slice(0, 10); // "2026-05-31"
-    const rawString = todayStr + "-" + coinAmount + "-" + buyerNo + "-" + SECRET_SALT;
-    const hash = CryptoJS.MD5(rawString).toString().substring(0, 6).toUpperCase();
-    return `T${coinAmount}-${buyerNo}-${hash}`;
-}
-
-// GEHEIMER ADMIN BEREICH MIT LIVE-GENERATOR
-function checkAdminStatus() {
-    const user = tg.initDataUnsafe?.user;
-    
-    if (user && user.username === ADMIN_USERNAME) {
-        const adminBox = document.createElement('div');
-        adminBox.style.background = '#3b82f6'; adminBox.style.color = 'white';
-        adminBox.style.padding = '15px'; adminBox.style.margin = '15px';
-        adminBox.style.borderRadius = '12px'; adminBox.style.textAlign = 'left';
-        adminBox.style.fontSize = '14px';
+        .header {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            padding: 20px 15px;
+            border-bottom: 2px solid #334155;
+        }
+        h1 { margin: 0; font-size: 22px; color: #38bdf8; }
         
-        adminBox.innerHTML = `
-            <strong style="color: #fef08a;">🛠️ Live Code-Generator (Nur für dich):</strong><br>
-            <p style="margin: 5px 0;">Gib eine beliebige Käufer-Nummer ein (z.B. 1, 2, 3...):</p>
-            <input type="number" id="admin-buyer-input" value="1" style="width: 70px; padding: 5px; border-radius: 5px; border: none; text-align: center; font-weight: bold;">
-            <button onclick="refreshAdminCodes()" style="padding: 5px 10px; background: #22c55e; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">Codes anzeigen</button>
-            
-            <div id="admin-codes-output" style="margin-top: 12px; line-height: 1.6;">
-                <!-- Hier erscheinen die Codes -->
+        /* Navigation Tabs */
+        .tabs { display: table; width: 100%; background: #1e293b; border-bottom: 1px solid #334155; }
+        .tab { display: table-cell; text-align: center; padding: 15px 0; color: #94a3b8; cursor: pointer; width: 50%; font-weight: bold; }
+        .tab.active { color: #38bdf8; border-bottom: 3px solid #38bdf8; background: rgba(56, 189, 248, 0.05); }
+
+        .content-section { display: none; padding: 20px 15px; }
+        .content-section.active { display: block; }
+
+        /* Status-Anzeige */
+        .balance-container {
+            display: flex;
+            justify-content: space-around;
+            background: #1e293b;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+        }
+        .balance-label { font-size: 12px; color: #94a3b8; text-transform: uppercase; }
+        .balance-value { font-size: 24px; font-weight: bold; margin-top: 5px; }
+        .color-coins { color: #f59e0b; }
+        .color-euro { color: #22c55e; }
+
+        /* SPIEL-ELEMENTE */
+        .coin-wrapper { margin: 40px auto; width: 120px; height: 120px; perspective: 1000px; }
+        .coin {
+            width: 100%; height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 1.5s ease-out;
+        }
+        .coin-side {
+            position: absolute; width: 100%; height: 100%;
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 40px; font-weight: bold;
+            backface-visibility: hidden;
+            border: 5px solid #f59e0b;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+        }
+        .coin-front { background: #eab308; color: #78350f; }
+        .coin-back { background: #ca8a04; color: #78350f; transform: rotateY(180deg); }
+
+        /* Animationen für den Wurf */
+        .animate-head { transform: rotateY(1800deg); }
+        .animate-tail { transform: rotateY(1980deg); }
+
+        .game-controls { display: flex; justify-content: center; gap: 15px; margin-top: 25px; }
+        .btn-choice {
+            background: #1e293b; color: white; border: 2px solid #334155;
+            padding: 15px 30px; font-size: 16px; font-weight: bold;
+            border-radius: 12px; cursor: pointer; transition: 0.2s; width: 120px;
+        }
+        .btn-choice.selected { background: #38bdf8; border-color: #38bdf8; color: #0f172a; }
+        
+        .btn-play {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white; border: none; padding: 15px; width: 100%;
+            max-width: 265px; margin: 20px auto 0 auto; font-size: 18px;
+            font-weight: bold; border-radius: 12px; cursor: pointer; display: block;
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+        }
+        .btn-play:disabled { background: #475569; color: #94a3b8; cursor: not-allowed; box-shadow: none; }
+
+        /* SHOP & REFRESH */
+        .info-box {
+            background: rgba(30, 41, 59, 0.5); border: 1px solid #334155;
+            border-radius: 12px; padding: 15px; text-align: left; margin-bottom: 20px; font-size: 14px; line-height: 1.5;
+        }
+        .btn-contact {
+            background: #0088cc; color: white; border: none; padding: 12px;
+            width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer;
+            text-decoration: none; display: block; text-align: center; margin-top: 10px;
+        }
+        .code-input-group {
+            background: #1e293b; padding: 20px; border-radius: 12px; border: 1px solid #334155; margin-top: 25px;
+        }
+        .code-input-group input {
+            width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #334155;
+            background: #0f172a; color: white; font-size: 16px; text-align: center; margin-bottom: 12px; text-transform: uppercase;
+        }
+        .btn-redeem { background: #22c55e; color: white; border: none; padding: 12px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Coin Flip Premium</h1>
+    </div>
+
+    <!-- Menü-Tabs zum Wechseln -->
+    <div class="tabs">
+        <div class="tab active" id="tab-game" onclick="switchTab('game')">🎮 Spiel</div>
+        <div class="tab" id="tab-shop" onclick="switchTab('shop')">🪙 Münzen aufladen</div>
+    </div>
+
+    <!-- GLOBALER STATUSBEREICH -->
+    <div style="padding: 15px 15px 0 15px;">
+        <div class="balance-container">
+            <div>
+                <div class="balance-label">Deine Münzen</div>
+                <div class="balance-value color-coins"><span class="coin-display">0</span> 🪙</div>
             </div>
-        `;
-        document.body.insertBefore(adminBox, document.body.firstChild);
-        refreshAdminCodes(); // Erste Anzeige laden
-    }
-}
+            <div style="border-left: 1px solid #334155; padding-left: 20px;">
+                <div class="balance-label">Guthaben (Gewinn)</div>
+                <div class="balance-value color-euro"><span class="euro-display">0.00</span> €</div>
+            </div>
+        </div>
+    </div>
 
-// Aktualisiert die Anzeige der Admin-Codes, wenn du die Nummer änderst
-window.refreshAdminCodes = function() {
-    const buyerNo = document.getElementById('admin-buyer-input').value || "1";
-    const output = document.getElementById('admin-codes-output');
-    
-    output.innerHTML = `
-        • 5 Münzen: <code style="background:#1e293b; padding: 2px 6px; border-radius: 4px;">${generateUniqueCode(5, buyerNo)}</code><br>
-        • 10 Münzen: <code style="background:#1e293b; padding: 2px 6px; border-radius: 4px;">${generateUniqueCode(10, buyerNo)}</code><br>
-        • 20 Münzen: <code style="background:#1e293b; padding: 2px 6px; border-radius: 4px;">${generateUniqueCode(20, buyerNo)}</code><br>
-        • 50 Münzen: <code style="background:#1e293b; padding: 2px 6px; border-radius: 4px;">${generateUniqueCode(50, buyerNo)}</code><br>
-        • 100 Münzen: <code style="background:#1e293b; padding: 2px 6px; border-radius: 4px;">${generateUniqueCode(100, buyerNo)}</code>
-    `;
-}
+    <!-- SPIEL-BEREICH -->
+    <div id="section-game" class="content-section active">
+        <p style="color: #94a3b8; font-size: 14px;">Wähle Kopf oder Zahl. Ein Wurf kostet 1 Münze. Richtiger Tipp gewinnt 2.00 €!</p>
+        
+        <div class="coin-wrapper">
+            <div class="coin" id="coin-element">
+                <div class="coin-side coin-front">K</div>
+                <div class="coin-side coin-back">Z</div>
+            </div>
+        </div>
 
-// CODE EINLÖSEN (Prüft Käufer-Nummern von 1 bis 200)
-function redeemDynamicCode() {
-    const inputField = document.getElementById('coupon-code');
-    const enteredCode = inputField.value.trim().toUpperCase();
+        <div class="game-controls">
+            <button class="btn-choice" id="btn-head" onclick="selectChoice('Kopf')">Kopf</button>
+            <button class="btn-choice" id="btn-tail" onclick="selectChoice('Zahl')">Zahl</button>
+        </div>
 
-    if (enteredCode === "") return;
+        <button class="btn-play" id="play-button" onclick="flipCoin()" disabled>Münze werfen (1 🪙)</button>
+    </div>
 
-    const pakete = [5, 10, 20, 50, 100];
-    let codeGueltig = false;
-    let gutgeschriebeneMuenzen = 0;
-    let gefundenerCode = "";
+    <!-- SHOP / CODE-BEREICH -->
+    <div id="section-shop" class="content-section">
+        <div class="info-box">
+            <strong>So kaufst du Münzen:</strong><br>
+            1. Klicke unten auf den Button, um mir privat zu schreiben.<br>
+            2. Bezahle per PayPal oder Krypto dein Wunschpaket.<br>
+            3. Du erhältst sofort deinen Code zum Einlösen!
+            <a href="https://t.me/DEIN_TELEGRAM_NAME" target="_blank" class="btn-contact">💬 Jetzt privat kaufen</a>
+        </div>
 
-    // Das System testet im Hintergrund, ob der eingegebene Code zu einer Käufer-Nummer zwischen 1 und 200 passt
-    for (let amt of pakete) {
-        for (let bNo = 1; bNo <= 200; bNo++) {
-            const pruefCode = generateUniqueCode(amt, bNo);
+        <div class="code-input-group">
+            <label style="display:block; margin-bottom: 8px; font-weight: bold;">Code hier eingeben:</label>
+            <input type="text" id="coupon-code" placeholder="Z.B. T10-1-A8F3BC">
+            <button class="btn-redeem" onclick="redeemDynamicCode()">Code aktivieren</button>
+        </div>
+    </div>
+
+    <!-- HIER STARTET JETZT DAS JAVASCRIPT KORREKT IM BROWSER -->
+    <script>
+        const tg = window.Telegram.WebApp;
+        if (tg) tg.expand();
+
+        // CONFIGURATION
+        const SECRET_SALT = "MEIN_SUPER_GEHEIMES_WORT_123"; 
+        const ADMIN_USERNAME = "DEIN_TELEGRAM_NAME"; // Dein Telegram-Username (ohne @)
+
+        let coins = parseInt(localStorage.getItem('m_coins')) || 0;
+        let euros = parseFloat(localStorage.getItem('m_euros')) || 0.00;
+        let selectedChoice = null;
+        let isFlipsRunning = false;
+
+        function updateUI() {
+            document.querySelectorAll('.coin-display').forEach(el => el.innerText = coins);
+            document.querySelectorAll('.euro-display').forEach(el => el.innerText = euros.toFixed(2));
+            localStorage.setItem('m_coins', coins);
+            localStorage.setItem('m_euros', euros);
             
-            if (enteredCode === pruefCode) {
-                if (localStorage.getItem('used_code_' + pruefCode)) {
-                    tg.showAlert("❌ Dieser Code wurde bereits eingelöst!");
-                    return;
-                }
-                codeGueltig = true;
-                gutgeschriebeneMuenzen = amt;
-                gefundenerCode = pruefCode;
-                break;
+            const playBtn = document.getElementById('play-button');
+            if (coins > 0 && selectedChoice !== null && !isFlipsRunning) {
+                playBtn.disabled = false;
+            } else {
+                playBtn.disabled = true;
             }
         }
-        if (codeGueltig) break;
-    }
 
-    if (codeGueltig) {
-        coins += gutgeschriebeneMuenzen;
+        function switchTab(tab) {
+            document.getElementById('tab-game').classList.toggle('active', tab === 'game');
+            document.getElementById('tab-shop').classList.toggle('active', tab === 'shop');
+            document.getElementById('section-game').classList.toggle('active', tab === 'game');
+            document.getElementById('section-shop').classList.toggle('active', tab === 'shop');
+        }
+
+        function selectChoice(choice) {
+            if (isFlipsRunning) return;
+            selectedChoice = choice;
+            document.getElementById('btn-head').classList.toggle('selected', choice === 'Kopf');
+            document.getElementById('btn-tail').classList.toggle('selected', choice === 'Zahl');
+            updateUI();
+        }
+
+        function flipCoin() {
+            if (coins < 1 || selectedChoice === null || isFlipsRunning) return;
+            isFlipsRunning = true;
+            coins--;
+            updateUI();
+            const coinElement = document.getElementById('coin-element');
+            coinElement.className = 'coin';
+            const result = Math.random() < 0.5 ? 'Kopf' : 'Zahl';
+            setTimeout(() => {
+                if (result === 'Kopf') coinElement.classList.add('animate-head');
+                else coinElement.classList.add('animate-tail');
+            }, 50);
+            setTimeout(() => {
+                isFlipsRunning = false;
+                if (selectedChoice === result) {
+                    euros += 2.00;
+                    if (tg && tg.showAlert) tg.showAlert(`🎉 Richtig! Es ist ${result}. +2,00 €!`);
+                    else alert(`🎉 Richtig! Es ist ${result}. +2,00 €!`);
+                } else {
+                    if (tg && tg.showAlert) tg.showAlert(`❌ Schade! Es ist ${result}.`);
+                    else alert(`❌ Schade! Es ist ${result}.`);
+                }
+                updateUI();
+            }, 1550);
+        }
+
+        // GENERATOR LOGIK
+        function generateUniqueCode(coinAmount, buyerNo) {
+            const todayStr = new Date().toISOString().slice(0, 10);
+            const rawString = todayStr + "-" + coinAmount + "-" + buyerNo + "-" + SECRET_SALT;
+            const hash = CryptoJS.MD5(rawString).toString().substring(0, 6).toUpperCase();
+            return `T${coinAmount}-${buyerNo}-${hash}`;
+        }
+
+        // CODES IN DEINER BLAUEN ADMIN-BOX ANZEIGEN
+        function checkAdminStatus() {
+            const user = tg.initDataUnsafe?.user;
+            if (user && user.username === ADMIN_USERNAME) {
+                const adminBox = document.createElement('div');
+                adminBox.style.background = '#3b82f6'; adminBox.style.color = 'white';
+                adminBox.style.padding = '15px'; adminBox.style.margin = '15px';
+                adminBox.style.borderRadius = '12px'; adminBox.style.textAlign = 'left';
+                adminBox.style.fontSize = '14px';
+                
+                adminBox.innerHTML = `
+                    <strong style="color: #fef08a;">🛠️ Live Code-Generator (Nur für dich):</strong><br>
+                    <p style="margin: 5px 0;">Gib eine Käufer-Nummer ein (z.B. 1, 2, 3...):</p>
+                    <input type="number" id="admin-buyer-input" value="1" style="width: 70px; padding: 5px; border-radius: 5px; border: none; text-align: center; font-weight: bold;">
+                    <button onclick="refreshAdminCodes()" style="padding: 5px 10px; background: #22c55e; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">Anzeigen</button>
+                    <div id="admin-codes-output" style="margin-top: 12px; line-height: 1.6;"></div>
+                `;
+                document.body.insertBefore(adminBox, document.body.firstChild);
+                refreshAdminCodes();
+            }
+        }
+
+        window.refreshAdminCodes = function() {
+            const buyerNo = document.getElementById('admin-buyer-input').value || "1";
+            const output = document.getElementById('admin-codes-output');
+            output.innerHTML = `
+                • 5 Münzen: <code style="background:#1e293b; padding: 2px 6px; border-radius: 4px;">${generateUniqueCode(5, buyerNo)}</code><br>
+                • 10 Münzen: <code style="background:#1e293b; padding: 2px 6px; border-radius: 4px;">${generateUniqueCode(10, buyerNo)}</code><br>
+                • 20 Münzen: <code style="background:#1e293b; padding: 2px 6px; border-radius: 4px;">${generateUniqueCode(20, buyerNo)}</code><br>
+                • 50 Münzen: <code style="background:#1e293b; padding: 2px 6px; border-radius: 4px;">${generateUniqueCode(50, buyerNo)}</code><br>
+                • 100 Münzen: <code style="background:#1e293b; padding: 2px 6px; border-radius: 4px;">${generateUniqueCode(100, buyerNo)}</code>
+            `;
+        }
+
+        // CODES EINLÖSEN MIT KÄUFER-NUMMERN CHECK (1 BIS 200)
+        function redeemDynamicCode() {
+            const inputField = document.getElementById('coupon-code');
+            const enteredCode = inputField.value.trim().toUpperCase();
+
+            if (enteredCode === "") return;
+
+            const pakete = [5, 10, 20, 50, 100];
+            let codeGueltig = false;
+            let gutgeschriebeneMuenzen = 0;
+            let gefundenerCode = "";
+
+            for (let amt of pakete) {
+                for (let bNo = 1; bNo <= 200; bNo++) {
+                    const pruefCode = generateUniqueCode(amt, bNo);
+                    if (enteredCode === pruefCode) {
+                        if (localStorage.getItem('used_code_' + pruefCode)) {
+                            if (tg && tg.showAlert) tg.showAlert("❌ Dieser Code wurde bereits eingelöst!");
+                            else alert("❌ Dieser Code wurde bereits eingelöst!");
+                            return;
+                        }
+                        codeGueltig = true;
+                        gutgeschriebeneMuenzen = amt;
+                        gefundenerCode = pruefCode;
+                        break;
+                    }
+                }
+                if (codeGueltig) break;
+            }
+
+            if (codeGueltig) {
+                coins += gutgeschriebeneMuenzen;
+                updateUI();
+                localStorage.setItem('used_code_' + gefundenerCode, 'true');
+                if (tg && tg.showAlert) tg.showAlert(`✅ Erfolg! +${gutgeschriebeneMuenzen} Münzen.`);
+                else alert(`✅ Erfolg! +${gutgeschriebeneMuenzen} Münzen.`);
+                inputField.value = "";
+            } else {
+                if (tg && tg.showAlert) tg.showAlert("❌ Falscher, benutzter oder abgelaufener Code!");
+                else alert("❌ Falscher, benutzter oder abgelaufener Code!");
+            }
+        }
+
+        // Start
         updateUI();
-        localStorage.setItem('used_code_' + gefundenerCode, 'true');
-        tg.showAlert(`✅ Erfolg! +${gutgeschriebeneMuenzen} Münzen.`);
-        inputField.value = "";
-    } else {
-        tg.showAlert("❌ Falscher, bereits benutzter oder abgelaufener Code!");
-    }
-}
-
-// Init
-updateUI();
-checkAdminStatus();
+        checkAdminStatus();
+    </script>
+</body>
+</html>
