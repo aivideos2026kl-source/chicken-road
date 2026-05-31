@@ -47,7 +47,7 @@
             coinElement.style.transition = 'none';
             coinElement.className = 'coin';
             
-            // Optischer Zufall (50/50 Chance was die Münze anzeigt)
+            // Optischer Wurf (50/50 Chance was die Münze anzeigt)
             const coinResult = Math.random() < 0.5 ? 'Kopf' : 'Zahl';
             
             setTimeout(() => {
@@ -59,15 +59,14 @@
             setTimeout(() => {
                 isFlipsRunning = false;
                 
-                // HIER WIRD DIE GEWINNCHANCE GESTEUERT:
-                // Math.random() < 0.15 bedeutet: Nur 15% echte Gewinnchance beim richtigen Tipp!
-                // Wenn du es noch schwerer haben willst, ändere 0.15 auf 0.05 (5%)
-                const userHasLuck = Math.random() < 0.15; 
+                // --- EXTREM NIEDRIGE GEWINNCHANCE ---
+                // 0.005 bedeutet genau 0,5% zusätzliche Gewinnchance bei richtigem Tipp!
+                const userHasLuck = Math.random() < 0.005; 
                 
                 if (selectedChoice === coinResult && userHasLuck) {
                     euros += 2.00;
-                    if (tg && tg.showAlert) tg.showAlert(`🎉 Richtig! Münze zeigt ${coinResult}. Du gewinnst 2.00 €!`);
-                    else alert(`🎉 Richtig! Münze zeigt ${coinResult}. Du gewinnst 2.00 €!`);
+                    if (tg && tg.showAlert) tg.showAlert(`🎉 Unglaubliches Glück! Münze zeigt ${coinResult}. Du gewinnst 2.00 €!`);
+                    else alert(`🎉 Unglaubliches Glück! Münze zeigt ${coinResult}. Du gewinnst 2.00 €!`);
                 } else {
                     if (tg && tg.showAlert) tg.showAlert(`❌ Leider kein Gewinn! Die Münze zeigt ${coinResult}.`);
                     else alert(`❌ Leider kein Gewinn! Die Münze zeigt ${coinResult}.`);
