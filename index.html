@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chicken Road - Perfekte Version</title>
+    <title>Chicken Road - Präzise Edition</title>
     <style>
         :root {
             --bg-dark: #0f0b1e;
@@ -42,7 +42,7 @@
             position: relative;
         }
 
-        /* --- MENÜBAR OBEN --- */
+        /* --- NAVIGATION OBERHALB --- */
         .top-nav {
             display: flex;
             justify-content: space-between;
@@ -85,15 +85,15 @@
             flex-shrink: 0;
         }
 
-        /* Das Huhn - zentriert sich dank Flexbox im Gully perfekt */
+        /* Das Huhn - Langsame, geschmeidige Bewegung eingebaut (0.8 Sekunden) */
         .chicken {
             position: absolute;
-            left: 55px;
+            left: 30px;
             top: 50%;
             transform: translateY(-50%);
-            font-size: 2.2rem;
+            font-size: 2.3rem;
             z-index: 10;
-            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            transition: left 0.8s ease-in-out, top 0.8s ease-in-out; 
             pointer-events: none;
         }
 
@@ -111,7 +111,7 @@
         .road-container-scroll {
             display: flex;
             align-items: center;
-            padding-left: 30px;
+            padding-left: 40px;
             padding-right: 250px;
             height: 100%;
             position: relative;
@@ -125,39 +125,39 @@
             border-left: 3px dashed rgba(255,255,255,0.3);
         }
 
-        /* Gullydeckel */
+        /* Kacheln (Gullydeckel) */
         .gully-tile {
-            width: 70px;
-            height: 70px;
+            width: 75px;
+            height: 75px;
             background: radial-gradient(circle, #424242 0%, #212121 100%);
             border: 4px solid #111;
             border-radius: 50%;
-            margin-right: 40px;
+            margin-right: 45px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: bold;
             color: #aaa;
             box-shadow: 0 4px 6px rgba(0,0,0,0.4);
             position: relative;
             z-index: 6;
             flex-shrink: 0;
-            transition: all 0.2s ease;
+            transition: border-color 0.3s;
         }
         .gully-tile.active-step {
             border-color: var(--gold);
             box-shadow: 0 0 12px var(--gold);
         }
 
-        /* Exakte Verwandlung in Goldmünze */
+        /* Verwandlung in Goldmünze */
         .gully-tile.safe-coin {
             background: radial-gradient(circle, #ffee55 0%, #fbc02d 100%);
             border-color: #fff;
         }
         .gully-tile.safe-coin::after {
             content: '🪙';
-            font-size: 2.2rem;
+            font-size: 2.4rem;
             position: absolute;
             display: flex;
             align-items: center;
@@ -166,17 +166,16 @@
             height: 100%;
         }
 
-        /* Langsame Autos von oben */
+        /* Autos fahren jetzt absolut schnurgerade von oben nach unten herunter */
         .car-obstacle {
             position: absolute;
-            font-size: 2.4rem;
+            font-size: 2.6rem;
             z-index: 12;
-            transform: rotate(180deg);
             top: -60px;
-            transition: top 2.0s linear; /* Langsame, flüssige Fahrt */
+            transition: top 1.8s linear; /* Gleichmäßige, gerade Fahrt nach unten */
         }
 
-        /* --- STEUERUNG --- */
+        /* --- CONTROL PANEL --- */
         .control-panel {
             background-color: var(--panel-bg);
             padding: 15px 20px;
@@ -233,7 +232,6 @@
             color: #fff;
         }
 
-        /* --- OVERLAYS --- */
         .overlay-screen {
             position: absolute;
             top: 55px; left: 0; right: 0; bottom: 0;
@@ -258,10 +256,10 @@
 
     <div class="app-container">
         
-        <!-- NAVIGATION -->
+        <!-- HEADER INTERFACE -->
         <div class="top-nav">
             <div style="font-weight: bold; display: flex; align-items: center; gap: 5px;">
-                <span>🪙</span> <span id="balance-coins">150</span> Test-Münzen
+                <span>🪙</span> <span id="balance-coins">200</span> Test-Münzen
             </div>
             <div class="nav-buttons">
                 <button class="nav-btn" onclick="openOverlay('shop-overlay')">🛒 Gratis Shop</button>
@@ -269,24 +267,23 @@
             </div>
         </div>
 
-        <!-- SPIELFELD -->
+        <!-- AREA DER STRASSE -->
         <div class="game-view">
             <div class="farm-side">
-                <div class="chicken" id="player-chicken">🐓</div>
+                <div class="chicken" id="player-chicken"> Rooster 🐓 </div>
             </div>
             <div class="road-side" id="road-scroller">
                 <div class="road-container-scroll" id="tiles-container"></div>
             </div>
         </div>
 
-        <!-- STEUERUNG -->
+        <!-- BEDIEUNUNGSPANEL -->
         <div class="control-panel">
             <div class="stats-bar">
                 <div>Kosten: <span class="stat-val">10 Münzen</span></div>
-                <div>Gewinn: <span class="stat-val" id="display-win">0.00</span> € (Test)</div>
+                <div>Lauf-Gewinn: <span class="stat-val" id="display-win">0.00</span> €</div>
             </div>
 
-            <!-- Haupt-Aktionsbereich -->
             <div id="action-area">
                 <button id="btn-action" class="action-button btn-green-main" onclick="startRound()">Runde starten</button>
             </div>
@@ -297,31 +294,29 @@
             </div>
         </div>
 
-        <!-- GRATIS SHOP OVERLAY -->
+        <!-- POPUPS -->
         <div id="shop-overlay" class="overlay-screen">
             <div class="overlay-header">
-                <h3>🛒 Gratis Münzen aufladen (0 €)</h3>
+                <h3>🛒 Gratis Münzen (0 € Modus)</h3>
                 <button class="close-btn" onclick="closeOverlays()">×</button>
             </div>
-            <p>Hier kannst du dein Testguthaben komplett kostenlos aufladen!</p>
-            <button class="action-button btn-green-main" onclick="freeRefill()" style="margin-top: 20px;">+100 Gratis-Münzen holen</button>
+            <p>Es wird kein Echtgeld benötigt. Alles ist komplett kostenfrei eingestellt!</p>
+            <button class="action-button btn-green-main" onclick="freeRefill()" style="margin-top: 20px;">+100 Münzen gratis aufladen</button>
         </div>
 
-        <!-- MENÜ OVERLAY -->
         <div id="settings-overlay" class="overlay-screen">
             <div class="overlay-header">
-                <h3>⚙️ Menü & Support</h3>
+                <h3>⚙️ Einstellungen</h3>
                 <button class="close-btn" onclick="closeOverlays()">×</button>
             </div>
             <p><strong>Sprache:</strong> Deutsch</p>
-            <p><strong>Support:</strong> @DeinTelegramBot</p>
-            <p style="color: var(--text-muted); font-size: 0.85rem;">Das Spiel läuft im kostenlosen Demomodus.</p>
+            <p><strong>Support:</strong> Aktiviert</p>
         </div>
 
     </div>
 
     <script>
-        let coins = 150;
+        let coins = 200;
         let gameMode = 'manual'; 
         let isGameRunning = false;
         let currentStep = 0;
@@ -330,6 +325,7 @@
         let betCostInCoins = 10; 
         let minePositions = [];
         let autoTimer = null;
+        let isMoving = false; // Blockiert Klicks während das Huhn läuft
 
         const multipliers = [1.05, 1.15, 1.25, 1.40, 1.60, 1.90, 2.30, 2.80, 3.50, 5.00];
 
@@ -341,10 +337,10 @@
 
         function generateRoad() {
             tilesContainer.innerHTML = '';
-            for(let i = 1; i <= 5; i++) {
+            for(let i = 1; i <= 6; i++) {
                 const line = document.createElement('div');
                 line.className = 'lane-line';
-                line.style.left = `${i * 110}px`;
+                line.style.left = `${i * 120}px`;
                 tilesContainer.appendChild(line);
             }
             for (let i = 0; i < maxSteps; i++) {
@@ -374,7 +370,7 @@
 
         function startRound() {
             if (coins < betCostInCoins) {
-                alert("Keine Münzen mehr! Nutze den Gratis-Shop.");
+                alert("Keine Münzen! Lade im Gratis-Shop nach.");
                 openOverlay('shop-overlay');
                 return;
             }
@@ -382,17 +378,18 @@
             coins -= betCostInCoins;
             balanceCoinsDisplay.innerText = coins;
             isGameRunning = true;
+            isMoving = false;
             currentStep = 0;
             earnedMoney = 0.00;
             displayWin.innerText = "0.00";
 
-            // Autos zufällig verteilen
+            // Hindernis-Verteilung
             minePositions = Array(maxSteps).fill(false);
             let randomDanger = Math.floor(Math.random() * 5) + 2; 
             minePositions[randomDanger] = true;
 
             generateRoad();
-            chicken.style.left = '55px'; // Startposition Farm
+            chicken.style.left = '30px'; 
             chicken.style.top = '50%';
             scroller.scrollLeft = 0;
 
@@ -417,60 +414,68 @@
         }
 
         function executeStep() {
-            if (!isGameRunning) return;
+            if (!isGameRunning || isMoving) return;
 
+            isMoving = true; // Verhindert Spamming während der langsamen Bewegung
             const targetGully = document.getElementById(`step-${currentStep}`);
             
-            // HIER PASSIERT DIE LANDUNG: Berechnet exakt die Mitte der Kachel
-            const targetX = targetGully.offsetLeft + (targetGully.offsetWidth / 2) - (chicken.offsetWidth / 2) - 15;
+            // Mathematisch exakte Zentrierung auf dem Münz-Gully
+            const containerLeft = tilesContainer.getBoundingClientRect().left;
+            const gullyLeft = targetGully.getBoundingClientRect().left;
+            const targetX = (gullyLeft - containerLeft) + (targetGully.offsetWidth / 2) - (chicken.offsetWidth / 2);
+            
+            // Huhn läuft los
             chicken.style.left = `${targetX}px`;
 
-            if (minePositions[currentStep]) {
-                isGameRunning = false;
-                if (autoTimer) clearInterval(autoTimer);
-
-                // Auto kommt langsam angefahren
-                const car = document.createElement('div');
-                car.className = 'car-obstacle';
-                car.innerText = '🚘';
-                car.style.left = `${targetGully.offsetLeft + 15}px`;
-                tilesContainer.appendChild(car);
-
-                setTimeout(() => { car.style.top = '35%'; }, 50);
-
-                setTimeout(() => {
-                    alert("💥 Auto-Crash! Versuch es noch einmal.");
-                    resetToStart();
-                }, 1500);
-
-            } else {
-                // Sicherer Sprung direkt auf die Münze
-                setTimeout(() => {
-                    targetGully.classList.remove('active-step');
-                    targetGully.classList.add('safe-coin');
-                }, 200);
-
-                earnedMoney += 0.50;
-                displayWin.innerText = earnedMoney.toFixed(2);
-
-                currentStep++;
-                if (currentStep > 1) scroller.scrollLeft += 110;
-
-                if (currentStep >= maxSteps) {
+            // Warten bis das Huhn die langsame Bewegung (0.8s) beendet hat
+            setTimeout(() => {
+                if (minePositions[currentStep]) {
                     isGameRunning = false;
                     if (autoTimer) clearInterval(autoTimer);
-                    alert(`🎉 Gewonnen! Du hast ${earnedMoney.toFixed(2)} € geschafft!`);
-                    resetToStart();
+
+                    // Auto kommt exakt schnurgerade von oben nach unten gefahren
+                    const car = document.createElement('div');
+                    car.className = 'car-obstacle';
+                    car.innerText = '🚘';
+                    car.style.left = `${targetGully.offsetLeft + (targetGully.offsetWidth / 2) - 20}px`;
+                    tilesContainer.appendChild(car);
+
+                    setTimeout(() => { car.style.top = '35%'; }, 50);
+
+                    setTimeout(() => {
+                        alert("💥 Crash! Ein Auto kam von oben.");
+                        resetToStart();
+                    }, 1500);
+
                 } else {
-                    if (gameMode === 'manual') {
-                        highlightStep();
-                        document.getElementById('action-area').innerHTML = `
-                            <button class="action-button btn-green-main" onclick="executeStep()" style="margin-bottom:5px;">Weiter Springen</button>
-                            <button class="action-button" onclick="cashOutEarly()" style="background:#d32f2f;">Sichern (${earnedMoney.toFixed(2)}€)</button>
-                        `;
+                    // Punktlandung auf der Münze vollendet
+                    targetGully.classList.remove('active-step');
+                    targetGully.classList.add('safe-coin');
+
+                    earnedMoney += 0.50;
+                    displayWin.innerText = earnedMoney.toFixed(2);
+
+                    currentStep++;
+                    isMoving = false;
+
+                    if (currentStep > 1) scroller.scrollLeft += 120;
+
+                    if (currentStep >= maxSteps) {
+                        isGameRunning = false;
+                        if (autoTimer) clearInterval(autoTimer);
+                        alert(`🎉 Gewonnen! Du hast ${earnedMoney.toFixed(2)} € erreicht!`);
+                        resetToStart();
+                    } else {
+                        if (gameMode === 'manual') {
+                            highlightStep();
+                            document.getElementById('action-area').innerHTML = `
+                                <button class="action-button btn-green-main" onclick="executeStep()" style="margin-bottom:5px;">Weiter Springen</button>
+                                <button class="action-button" onclick="cashOutEarly()" style="background:#d32f2f;">Sichern (${earnedMoney.toFixed(2)}€)</button>
+                            `;
+                        }
                     }
                 }
-            }
+            }, 800); // Entspricht exakt der Animationsdauer des Huhns
         }
 
         function startAutoModeLoop() {
@@ -478,32 +483,34 @@
                 <button id="btn-action" class="action-button" style="background:#555;" disabled>Auto-Modus läuft...</button>
             `;
             
-            // Der Auto-Modus macht nun alle 1.5 Sekunden vollautomatisch den Schritt
             autoTimer = setInterval(() => {
                 if (!isGameRunning) {
                     clearInterval(autoTimer);
                     return;
                 }
                 
-                executeStep();
+                if (!isMoving) {
+                    executeStep();
+                }
 
-                // KI entscheidet im Auto-Modus zufällig, ob sie zwischendurch aufhört und sichert
-                if (isGameRunning && currentStep >= 4 && Math.random() > 0.7) {
+                // Auto-Modus stoppt manchmal strategisch um abzuheben
+                if (isGameRunning && currentStep >= 4 && Math.random() > 0.75) {
                     clearInterval(autoTimer);
                     cashOutEarly();
                 }
-            }, 1500);
+            }, 2200); // Genug Zeitfenster für den langsamen Sprung + Pause
         }
 
         function cashOutEarly() {
             isGameRunning = false;
             if (autoTimer) clearInterval(autoTimer);
-            alert(`Runde beendet! Du nimmst ${earnedMoney.toFixed(2)} € mit.`);
+            alert(`Gesichert! Du beendest die Runde mit ${earnedMoney.toFixed(2)} €.`);
             resetToStart();
         }
 
         function resetToStart() {
             isGameRunning = false;
+            isMoving = false;
             if (autoTimer) clearInterval(autoTimer);
             document.getElementById('action-area').innerHTML = `
                 <button id="btn-action" class="action-button btn-green-main" onclick="startRound()">Runde starten</button>
