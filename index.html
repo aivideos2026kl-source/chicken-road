@@ -2,551 +2,362 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Chicken Road - Original Remake</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chicken Road - Simulator</title>
     <style>
-        :root {
-            --bg-color: #1a1b20;
-            --road-color: #55555c;
-            --panel-color: #23262d;
-            --green-color: #25bb59;
-            --gold-color: #f3aa12;
-            --text-color: #ffffff;
-            --input-bg: #191b1f;
-        }
-
         body {
             margin: 0;
             padding: 0;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: '-apple-system', BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* Top Header */
-        .header {
-            width: 92%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 4%;
-            background-color: #131417;
-            border-bottom: 1px solid #2a2c33;
-        }
-
-        .logo { font-weight: 900; font-size: 18px; letter-spacing: 0.5px; color: #fff; }
-        .logo span { color: #e63946; }
-
-        .balance-box {
-            background: #23262d;
-            padding: 6px 14px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            border: 1px solid #333742;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 14px;
-        }
-        .balance-box span { color: var(--gold-color); margin-left: 5px; }
-
-        /* DIE ORIGINALE STRASSE AUS IMAGE_15 */
-        #game-area {
-            flex: 1;
-            width: 100%;
-            max-width: 450px;
-            background-color: var(--road-color);
-            position: relative;
-            display: grid;
-            grid-template-columns: repeat(6, 1fr); /* 6 Fahrspuren */
-            border-left: 3px solid #333;
-            border-right: 3px solid #333;
-            box-sizing: border-box;
-        }
-
-        /* Gestrichelte Linien zwischen den Spuren */
-        .lane {
-            position: relative;
-            border-right: 2px dashed rgba(255, 255, 255, 0.4);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        .lane:last-child { border-right: none; }
-
-        /* Die runden Gullideckel / Buttons zum Klicken */
-        .plate-btn {
-            width: 52px;
-            height: 52px;
-            border-radius: 50%;
-            background: radial-gradient(circle, #3a3d45 40%, #23252a 100%);
-            border: 3px solid #1c1d22;
-            color: rgba(255,255,255,0.7);
-            font-size: 11px;
-            font-weight: bold;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            position: relative;
-            transition: transform 0.1s, background 0.2s;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.6), 0 4px 6px rgba(0,0,0,0.4);
-            user-select: none;
-            pointer-events: none; /* Erst nach GO klickbar */
-            opacity: 0.5;
-        }
-
-        .plate-btn.active-target {
-            pointer-events: auto;
-            opacity: 1;
-            border-color: var(--green-color);
-        }
-
-        /* Wenn gewonnen: Goldener Hähnchen-Coin */
-        .plate-btn.won-coin {
-            background: radial-gradient(circle, #fee440 20%, #f3aa12 100%);
-            border-color: #fff;
-            color: #000;
-            font-size: 20px;
-            box-shadow: 0 0 12px var(--gold-color);
-        }
-
-        /* Das Huhn */
-        #chicken-player {
-            position: absolute;
-            width: 46px;
-            height: 46px;
-            font-size: 34px;
-            text-align: center;
-            line-height: 46px;z-index: 20;
-            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            pointer-events: none;
-            bottom: 15px;
-            left: calc(50% - 23px);
-            display: none; /* Erscheint erst bei GO */
-        }
-
-        /* Der LKW der von oben kommt */
-        .truck-obstacle {
-            position: absolute;
-            top: -80px;
-            width: 50px;
-            height: 80px;
-            background-color: #f3aa12;
-            border-radius: 6px;
-            border: 2px solid #111;
-            z-index: 15;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            font-weight: bold;
-            font-size: 10px;
-            color: black;
-            padding-top: 5px;
-            box-sizing: border-box;
-            box-shadow: 0 6px 10px rgba(0,0,0,0.5);
-            transition: top 0.4s ease-in;
-        }
-        .truck-obstacle::before {
-            content: '';
-            position: absolute;
-            bottom: 5px; width: 42px; height: 35px;
-            background-color: #222; border-radius: 4px;
-        }
-
-        /* Warn-Absperrung (Baustelle oben) */
-        .barrier {
-            position: absolute;
-            top: 20px;
-            width: 85%;
-            height: 14px;
-            background: repeating-linear-gradient(45deg, #f3aa12, #f3aa12 10px, #111 10px, #111 20px);
-            border: 1px solid #000;
-            border-radius: 3px;
-        }
-
-        /* WOW TOP GEWINNER LISTE */
-        .leaderboard-section {
-            width: 92%;
-            max-width: 450px;
-            background-color: #131417;
-            margin: 6px 0;
-            padding: 10px;
-            border-radius: 10px;
-            border: 1px solid #252730;
-            box-sizing: border-box;
-        }
-
-        .leaderboard-header {
-            display: flex;
-            justify-content: space-between;
-            font-size: 11px;
-            color: #626875;
-            font-weight: bold;
-            margin-bottom: 5px;
-            text-transform: uppercase;
-        }
-
-        .leaderboard-scroll {
-            max-height: 85px;
-            overflow-y: auto;
-        }
-        .leaderboard-scroll::-webkit-scrollbar { width: 3px; }
-        .leaderboard-scroll::-webkit-scrollbar-thumb { background: #2c303b; }
-
-        .lb-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        .lb-table tr { border-bottom: 1px solid #1c1d24; }
-        .lb-table td { padding: 5px 2px; }
-        .lb-rank { color: var(--gold-color); font-weight: bold; width: 35px; }
-        .lb-score { text-align: right; color: var(--gold-color); font-weight: bold; }
-
-        /* Control Panel */
-        .control-panel {
-            width: 92%;
-            max-width: 450px;
-            background-color: var(--panel-color);
-            border-top-left-radius: 20px;
-            border-top-right-radius: 20px;
-            padding: 14px 4% 18px 4%;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            box-sizing: border-box;
-            border-top: 1px solid #2d313d;
-        }
-
-        .bet-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-        .bet-button {
-            background-color: #191b1f;
-            border: 1px solid #333742;
+            background-color: #1a1a1a;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: #fff;
-            padding: 10px;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 13px;
-            cursor: pointer;
-        }
-        .bet-button.active {
-            background: #fff;
-            color: #000;
-            border-color: #fff;
-        }
-
-        .action-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 12px; }
-        .panel-btn {
-            padding: 14px;
-            border: none;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: bold;
-            color: white;
-            cursor: pointer;
-        }
-        .btn-co { background-color: #bfa15f; color: #fff; }
-        .btn-start { background-color: var(--green-color); color: #fff; }
-
-        .top-nav { display: flex; gap: 12px; }
-        .nav-btn { background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
-
-        /* OVERLAYS (Shop, Wallet, Settings) */
-        .overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(19, 20, 23, 0.98);
-            display: none;
+            display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 100;
+            min-height: 100vh;
+            user-select: none;
+        }
+
+        #game-container {
+            width: 400px;
+            background: #2a2a2a;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
             padding: 20px;
-            box-sizing: border-box;
+            text-align: center;
+            border: 2px solid #3a3a3a;
         }
-        .overlay h2 { font-size: 22px; margin-bottom: 15px; text-transform: uppercase; color: var(--gold-color); }
-        
-        .menu-item {
-            padding: 14px; margin: 6px 0; width: 85%; max-width: 300px;
-            background-color: var(--input-bg); border: 1px solid #333742;
-            color: white; border-radius: 10px; font-size: 14px; font-weight: bold;
-            display: flex; justify-content: space-between; align-items: center; cursor: pointer;
+
+        .header-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            background: #202020;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: bold;
         }
-        .input-box { padding: 14px; width: 80%; max-width: 280px; border-radius: 10px; border: 1px solid #333742; background-color: var(--input-bg); color: white; font-size: 14px; margin-bottom: 12px; text-align: center; }
-        .btn-close { margin-top: 15px; background: none; border: none; color: #626875; font-size: 14px; cursor: pointer; font-weight: bold; }
-        .checkout { background-color: #23262d; border: 1px solid #333742; padding: 20px; border-radius: 14px; width: 85%; max-width: 300px; text-align: center; display: none; }
+
+        #balance { color: #4caf50; }
+        #multiplier-display { 
+            font-size: 2rem; 
+            color: #ffeb3b; 
+            margin: 15px 0;
+            font-weight: 800;
+            text-shadow: 0 0 10px rgba(255,235,59,0.3);
+        }
+
+        /* Das Spielfeld */
+        #road-map {
+            height: 240px;
+            background: #4caf50; /* Gras */
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            border: 4px solid #1f1f1f;
+            margin-bottom: 20px;
+        }
+
+        .road {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background: #333;
+            border-top: 2px dashed #555;
+            border-bottom: 2px dashed #555;
+        }
+        #road-1 { top: 40px; }
+        #road-2 { top: 140px; }
+
+        /* Spiel-Objekte */
+        #chicken {
+            width: 32px;
+            height: 32px;
+            font-size: 28px;
+            line-height: 32px;
+            position: absolute;
+            left: 184px;
+            bottom: 10px;
+            transition: bottom 0.1s ease, left 0.05s linear;
+            z-index: 10;
+        }
+
+        .car {
+            position: absolute;
+            width: 40px;
+            height: 25px;
+            font-size: 24px;
+            line-height: 25px;
+            z-index: 5;
+        }
+
+        /* Steuerung */
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        button {
+            border: none;
+            padding: 15px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.1s, filter 0.2s;
+        }
+
+        button:active { transform: scale(0.96); }
+
+        #btn-step {
+            background: #ff9800;
+            color: white;
+            grid-column: span 2;
+            font-size: 1.2rem;
+        }
+        #btn-step:disabled { background: #555; cursor: not-allowed; }
+
+        #btn-cashout { background: #4caf50; color: white; }
+        #btn-cashout:disabled { background: #335535; color: #aaa; cursor: not-allowed; }
+
+        #btn-start { background: #2196f3; color: white; }
+
+        .input-group {
+            margin: 15px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input {
+            width: 80px;
+            padding: 8px;
+            background: #1a1a1a;
+            border: 1px solid #444;
+            color: white;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 1fr;
+        }
+
+        #status-message {
+            height: 20px;
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
     </style>
 </head>
 <body>
 
-    <!-- Header -->
-    <div class="header">
-        <div class="logo">CHICKEN<span>2</span>ROAD</div>
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <div class="balance-box" onclick="openOverlay('shop')">
-                <div id="display-balance">0</div> <span>🪙</span>
-            </div>
-            <div class="top-nav">
-                <button class="nav-btn" onclick="openOverlay('settings')">⚙️</button>
-                <button class="nav-btn" onclick="openOverlay('wallet')">👛</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- DIE STRASSE MIT 6 SPUREN -->
-    <div id="game-area">
-        <!-- Spuren werden mit Töpfen/Gullideckeln versehen -->
-        <div class="lane" id="lane-0"><div class="barrier"></div><button class="plate-btn" onclick="clickLane(0)" id="plate-0">4.11x</button></div>
-        <div class="lane" id="lane-1"><div class="barrier"></div><button class="plate-btn" onclick="clickLane(1)" id="plate-1">4.64x</button></div>
-        <div class="lane" id="lane-2"><div class="barrier"></div><button class="plate-btn" onclick="clickLane(2)" id="plate-2">5.39x</button></div>
-        <div class="lane" id="lane-3"><div class="barrier"></div><button class="plate-btn" onclick="clickLane(3)" id="plate-3">6.50x</button></div>
-        <div class="lane" id="lane-4"><div class="barrier"></div><button class="plate-btn" onclick="clickLane(4)" id="plate-4">8.36x</button></div>
-        <div class="lane" id="lane-5"><div class="barrier"></div><button class="plate-btn" onclick="clickLane(5)" id="plate-5">12.08x</button></div>
+    <div id="game-container">
+        <h2>CHICKEN ROAD</h2>
         
-        <!-- Das bewegliche Huhn -->
-        <div id="chicken-player">🐔</div>
-    </div>
-
-    <!-- TOP GEWINNER LISTE (BIS ZU 500 PLÄTZE) -->
-    <div class="leaderboard-section">
-        <div class="leaderboard-header">
-            <div>🏆 Live-Rangliste (Top 500)</div>
-            <div>Punkte</div>
-        </div>
-        <div class="leaderboard-scroll">
-            <table class="lb-table" id="lb-content">
-                <!-- Dynamisch generiert -->
-            </table>
-        </div>
-    </div>
-
-    <!-- Steuerungs-Panel -->
-    <div class="control-panel">
-        <div class="bet-grid">
-            <button class="bet-button active" id="bet05" onclick="changeBet(0.5, 'bet05')">0.5 🪙</button><button class="bet-button" id="bet1" onclick="changeBet(1, 'bet1')">1 🪙</button>
-            <button class="bet-button" id="bet2" onclick="changeBet(2, 'bet2')">2 🪙</button>
-            <button class="bet-button" id="bet5" onclick="changeBet(5, 'bet5')">5 🪙</button>
+        <div class="header-stats">
+            <div>Guthaben: <span id="balance">1000</span> Pkt</div>
+            <div>Einsatz: <span id="current-bet-display">0</span></div>
         </div>
 
-        <div class="action-grid">
-            <button class="panel-btn btn-co" onclick="claimCashout()">CASH OUT<br><span id="profit-text" style="font-size:11px; opacity:0.8;">0.00 USD</span></button>
-            <button class="panel-btn btn-start" id="main-action-btn" onclick="pressGo()">GO</button>
-        </div>
-    </div>
-
-    <!-- COIN SHOP -->
-    <div id="shop-overlay" class="overlay">
-        <h2>Münzen aufladen</h2>
-        <div id="shop-inner" style="width:100%; display:flex; flex-direction:column; align-items:center;">
-            <button class="menu-item" onclick="startCheckout(10, '1.50€')"><span>🪙 10 Münzen</span> <span style="color:var(--green-color)">1.50€</span></button>
-            <button class="menu-item" onclick="startCheckout(50, '5.00€')"><span>🪙 50 Münzen</span> <span style="color:var(--green-color)">5.00€</span></button>
-            <button class="menu-item" onclick="startCheckout(100, '9.00€')"><span>🪙 100 Münzen</span> <span style="color:var(--green-color)">9.00€</span></button>
-            <button class="menu-item" onclick="startCheckout(500, '35.00€')"><span>🪙 500 Münzen</span> <span style="color:var(--green-color)">35.00€</span></button>
+        <div id="road-map">
+            <!-- Die Straßen -->
+            <div class="road" id="road-1"></div>
+            <div class="road" id="road-2"></div>
+            
+            <!-- Das Huhn -->
+            <div id="chicken">🐓</div>
         </div>
 
-        <div id="checkout-area" class="checkout">
-            <h3 style="color:var(--gold-color); margin-top:0;">Direkte Einzahlung:</h3>
-            <p style="font-size:12px; color:#aaa;">Sende den Betrag <b id="checkout-price" style="color:#fff"></b> manuell an den Admin:</p>
-            <div style="background:#131417; padding:10px; border-radius:8px; font-size:12px; text-align:left; border:1px solid #333742; line-height:1.4; margin-bottom:12px;">
-                🔵 <b>PayPal:</b> deinpayouts@gmail.com<br>
-                💎 <b>TON Wallet:</b> UQAz...DEINE_WALLET_ADRESSE
-            </div>
-            <input type="text" id="pay-name" class="input-box" placeholder="Dein Telegram Name / TxID">
-            <button class="panel-btn btn-start" style="width:100%; padding:10px;" onclick="finishPayment()">Ich habe bezahlt</button>
-            <button class="btn-close" onclick="backToShop()">Zurück</button>
+        <div id="multiplier-display">x1.00</div>
+        <div id="status-message">Setze deinen Einsatz und starte!</div>
+
+        <div class="input-group">
+            <label for="bet-input">Einsatz:</label>
+            <input type="number" id="bet-input" value="100" min="10">
         </div>
-        <button class="btn-close" onclick="closeOverlays()">Schließen</button>
-    </div>
 
-    <!-- WALLET -->
-    <div id="wallet-overlay" class="overlay">
-        <h2>Wallet verknüpfen</h2>
-        <input type="email" id="user-pp" class="input-box" placeholder="PayPal E-Mail für Auszahlungen">
-        <input type="text" id="user-crypto" class="input-box" placeholder="TON / Trust Wallet Adresse">
-        <button class="panel-btn btn-start" style="width:85%; max-width:280px;" onclick="savePayoutData()">Speichern</button>
-        <button class="btn-close" onclick="closeOverlays()">Schließen</button>
-    </div>
-
-    <!-- SETTINGS -->
-    <div id="settings-overlay" class="overlay">
-        <h2>Sprache / Language</h2>
-        <button class="menu-item" onclick="setLanguage('de')">Deutsch 🇩🇪</button>
-        <button class="menu-item" onclick="setLanguage('tr')">Türkçe 🇹🇷</button>
-        <button class="menu-item" onclick="setLanguage('ar')">العربية 🇸🇾</button>
-        <button class="menu-item" onclick="setLanguage('en')">English 🇬🇧</button>
-        <button class="btn-close" onclick="closeOverlays()">Schließen</button>
+        <div class="controls">
+            <button id="btn-start" onclick="startGame()">Runde Starten</button>
+            <button id="btn-cashout" onclick="cashOut()" disabled>Cash Out</button>
+            <button id="btn-step" onclick="moveChicken()" disabled>SCHRITT VORWÄRTS (Risiko!)</button>
+        </div>
     </div>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        if(tg) { tg.expand(); }
+        let balance = 1000;
+        let currentBet = 0;
+        let currentMultiplier = 1.00;
+        let chickenY = 10; // Startposition unten
+        let isPlaying = false;
+        let gameLoopInterval;
+        let cars = [];
 
-        let accountBalance = 0; // Start bei 0 Münzen
-        let chosenBet = 0.5;
-        let isRoundActive = false;
-        let currentMultiplier = 1.0;
-        let activeStep = 0; // Auf welcher Reihe/Spur steht das Huhn
-        
-        // Multiplikatoren exakt wie im Screenshot
-        const laneMultipliers = [4.11, 4.64, 5.39, 6.50, 8.36, 12.08];
+        const chicken = document.getElementById('chicken');
+        const multiplierDisplay = document.getElementById('multiplier-display');
+        const balanceDisplay = document.getElementById('balance');
+        const betDisplay = document.getElementById('current-bet-display');
+        const statusMessage = document.getElementById('status-message');
+        const betInput = document.getElementById('bet-input');
 
-        // Top 500 Generierung
-        const lbBody = document.getElementById('lb-content');
-        let namesPool = ["Kurdo_Gamer", "Ahmet_07", "CryptoKing", "LogisticsPro", "Tonkeeper_User", "SniperPUBG"];
-        let flagsPool = ["🇩🇪", "🇹🇷", "🇸🇾", "🇬🇧", "🇦🇪"];
-        let lbHTML = "";
-        for(let i = 1; i <= 500; i++) {
-            let uName = namesPool[i % namesPool.length] + "_" + (Math.floor(Math.random() * 80) + 10);
-            let uFlag = flagsPool[i % flagsPool.length];
-            if(i === 1) { uName = "Kurdo_Gamer 👑"; uFlag = "🇩🇪"; }
-            let points = Math.floor(980000 / (i * 0.6 + 0.4)) + Math.floor(Math.random() * 25);
-            lbHTML += <tr><td class="lb-rank">#${i}</td><td>${uFlag} ${uName}</td><td class="lb-score">${points.toLocaleString()} 🪙</td></tr>;
-        }
-        lbBody.innerHTML = lbHTML;
+        const btnStart = document.getElementById('btn-start');
+        const btnCashout = document.getElementById('btn-cashout');
+        const btnStep = document.getElementById('btn-step');
 
-        function openOverlay(id) { closeOverlays(); document.getElementById(id + '-overlay').style.display = 'flex'; }
-        function closeOverlays() { document.querySelectorAll('.overlay').forEach(o => o.style.display = 'none'); backToShop(); }
-        
-        let buyAmount = 0;
-        function startCheckout(coins, price) { buyAmount = coins; document.getElementById('shop-inner').style.display = 'none'; document.getElementById('checkout-area').style.display = 'block'; document.getElementById('checkout-price').innerText = price; }
-        function backToShop() { document.getElementById('shop-inner').style.display = 'flex'; document.getElementById('checkout-area').style.display = 'none'; }
-        
-        function finishPayment() {
-            if(!document.getElementById('pay-name').value) { alert("Bitte gib deinen Namen oder die TxID an!"); return; }
-            accountBalance += buyAmount;
-            document.getElementById('display-balance').innerText = accountBalance;
-            alert(`Zahlung wird geprüft! ${buyAmount} Münzen wurden gutgeschrieben.`);
-            document.getElementById('pay-name').value = "";
-            closeOverlays();
-        }
-
-        function savePayoutData() { alert("Auszahlungsdaten erfolgreich verknüpft!"); closeOverlays(); }
-        function setLanguage(l) { alert("Sprache geändert."); closeOverlays(); }
-        function changeBet(val, id) { if(!isRoundActive) { chosenBet = val; document.querySelectorAll('.bet-button').forEach(b => b.classList.remove('active')); document.getElementById(id).classList.add('active'); } }
-
-        // DAS SPANNENDE ORIGINAL-SPIELSYSTEM
-        function pressGo() {
-            if(!isRoundActive) {
-                if(accountBalance < chosenBet) {
-                    alert("Du hast 0 Münzen! Klicke oben auf das Münzsymbol (🪙) und lade Guthaben auf.");
-                    return;
-                }
-                // Runde startet
-                accountBalance -= chosenBet;
-                document.getElementById('display-balance').innerText = accountBalance;
-                isRoundActive = true;
-                activeStep = 0;
-                currentMultiplier = 1.0;
-                document.getElementById('profit-text').innerText = "0.00 USD";
-                document.getElementById('main-action-btn').style.backgroundColor = "#ccc";
-                document.getElementById('main-action-btn').innerText = "WÄHLE SPUR";
-
-                // Setze alle Gullideckel zurück
-                for(let i=0; i<6; i++) {
-                    let p = document.getElementById('plate-' + i);
-                    p.className = "plate-btn";
-                    p.innerText = laneMultipliers[i] + "x";
-                }
-
-                // Huhn aktivieren und auf die Startposition stellen (Spur 1 leuchtet auf)
-                const ch = document.getElementById('chicken-player');
-                ch.style.display = "block";
-                ch.style.bottom = "15px";
-                ch.style.left = "calc(8.33% - 23px)"; // Vor Spur 0 positionieren
+        // Auto-Klasse für die Hindernisse
+        class Car {
+            constructor(row) {
+                this.row = row; // 1 oder 2 (obere oder untere Straße)
+                this.y = row === 1 ? 155 : 55; // Y-Pixelhöhe auf dem Feld
+                this.speed = (Math.random() * 2 + 1.5) * (row === 1 ? 1 : -1); // Richtung je nach Spur
+                this.x = this.speed > 0 ? -40 : 440;
                 
-                makeNextStepAvailable();
+                this.element = document.createElement('div');
+                this.element.className = 'car';
+                this.element.innerText = '🚗';
+                document.getElementById('road-map').appendChild(this.element);
+            }
+
+            update() {
+                this.x += this.speed;
+                this.element.style.left = this.x + 'px';
+                this.element.style.top = this.y + 'px';
+
+                // Am Rand wieder zurücksetzen
+                if (this.speed > 0 && this.x > 420) this.x = -40;
+                if (this.speed < 0 && this.x < -40) this.x = 420;
+            }
+
+            remove() {
+                this.element.remove();
             }
         }
 
-        function makeNextStepAvailable() {
-            // Alle sperren
-            document.querySelectorAll('.plate-btn').forEach(p => p.classList.remove('active-target'));// Nur die aktuelle Spur freischalten, auf die das Huhn springen muss
-            if(activeStep < 6) {
-                document.getElementById('plate-' + activeStep).classList.add('active-target');
+        function startGame() {
+            let bet = parseInt(betInput.value);
+            if (isNaN(bet) || bet > balance || bet <= 0) {
+                statusMessage.innerHTML = "<span style='color: #f44336;'>Ungültiger Einsatz!</span>";
+                return;
+            }
+
+            // Reset Variablen
+            balance -= bet;
+            currentBet = bet;
+            currentMultiplier = 1.00;
+            chickenY = 10;
+            isPlaying = true;
+            
+            // UI Updates
+            balanceDisplay.innerText = balance;
+            betDisplay.innerText = currentBet;
+            multiplierDisplay.innerText = "x1.00";
+            multiplierDisplay.style.color = "#ffeb3b";
+            statusMessage.innerText = "Huhn ist gestartet! Mach deinen ersten Schritt.";
+            chicken.innerText = "🐓";
+            chicken.style.bottom = chickenY + 'px';
+
+            btnStart.disabled = true;
+            btnStep.disabled = false;
+            btnCashout.disabled = false;
+
+            // Autos spawnen
+            cars.forEach(c => c.remove());
+            cars = [new Car(1), new Car(1), new Car(2), new Car(2)];
+            // Autos verteilen
+            cars[0].x = 50; cars[1].x = 250;
+            cars[2].x = 100; cars[3].x = 300;
+
+            // Game Loop starten für die flüssige Auto-Bewegung
+            clearInterval(gameLoopInterval);
+            gameLoopInterval = setInterval(updateGame, 20);
+        }
+
+        function moveChicken() {
+            if (!isPlaying) return;
+
+            // Huhn läuft nach oben
+            chickenY += 35;
+            chicken.style.bottom = chickenY + 'px';
+
+            // Multiplikator berechnen (wird mit jedem Schritt exponentiell höher)
+            currentMultiplier += (0.35 + (chickenY / 100));
+            multiplierDisplay.innerText = "x" + currentMultiplier.toFixed(2);
+
+            statusMessage.innerText = "Erfolgreicher Schritt! Weiter oder Cash Out?";
+
+            // Wenn das Huhn oben ankommt, wird es wieder unten hingesetzt (Unendliche Straße)
+            if (chickenY >= 210) {
+                chickenY = 10;
+                chicken.style.bottom = chickenY + 'px';
             }
         }
 
-        function clickLane(laneIndex) {
-            if(!isRoundActive || laneIndex !== activeStep) return;
+        function updateGame() {
+            if (!isPlaying) return;
 
-            // Wahrscheinlichkeit für LKW (Zufallscrasher)
-            let isCrash = Math.random() < 0.28; // 28% Chance pro Spur zu verlieren
+            // Autos bewegen
+            cars.forEach(car => {
+                car.update();
 
-            if(isCrash) {
-                // LKW kommt von oben herabgerauscht
-                const laneEl = document.getElementById('lane-' + laneIndex);
-                const truck = document.createElement('div');
-                truck.className = "truck-obstacle";
-                truck.innerText = "🚚 IN OUT";
-                laneEl.appendChild(truck);
+                // Kollisionsabfrage (Hitbox Huhn vs Auto)
+                let chickenLeft = 184;
+                let chickenRight = 216;
+                let chickenBottom = chickenY;
+                let chickenTop = chickenY + 32;
 
-                // Animation des LKWs nach unten
-                setTimeout(() => {
-                    truck.style.top = "70%";
-                }, 50);
+                let carLeft = car.x;
+                let carRight = car.x + 40;
+                let carBottom = 240 - car.y - 25; // Umrechnung wegen top/bottom CSS
+                let carTop = 240 - car.y;
 
-                setTimeout(() => {
-                    alert("💥 BOOM! Ein LKW hat das Huhn erwischt! Einsatz verloren.");
-                    truck.remove();
-                    resetGameAfterRound();
-                }, 500);
-
-            } else {
-                // Gewonnen! Huhn springt auf den Gullideckel
-                const ch = document.getElementById('chicken-player');
-                const plate = document.getElementById('plate-' + laneIndex);
-                
-                // Berechne neue Position des Huhns basierend auf der Spur
-                let percentLeft = (16.66 * laneIndex) + 8.33;
-                ch.style.left = calc(${percentLeft}% - 23px);
-                ch.style.bottom = "40%"; // Springt in die Mitte der Spur
-
-                // Gullideckel wird zum goldenen Coin
-                plate.className = "plate-btn won-coin";
-                plate.innerText = "🍗";
-
-                // Multiplikator aktualisieren
-                currentMultiplier = laneMultipliers[laneIndex];
-                let currentWinUSD = chosenBet * currentMultiplier * 1.15;
-                document.getElementById('profit-text').innerText = currentWinUSD.toFixed(2) + " USD";
-
-                activeStep++;
-
-                if(activeStep >= 6) {
-                    alert("🎉 Unglaublich! Du hast alle 6 Spuren überquert und den Jackpot geknackt!");
-                    claimCashout();
-                } else {
-                    makeNextStepAvailable();
+                if (chickenRight > carLeft && 
+                    chickenLeft < carRight && 
+                    chickenTop > carBottom && 
+                    chickenBottom < carTop) {
+                    
+                    // CRASH! Huhn wurde überfahren
+                    gameOver();
                 }
-            }
-            if(tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred("medium");
-        }
-
-        function claimCashout() {
-            if(isRoundActive && activeStep > 0) {
-                let winCoins = Math.floor(chosenBet * currentMultiplier * 1.5);
-                alert(`💰 Gewinn gesichert! Dir wurden +${winCoins} Münzen gutgeschrieben.`);
-                accountBalance += winCoins;
-                document.getElementById('display-balance').innerText = accountBalance;
-                resetGameAfterRound();
-            }
-        }
-
-        function resetGameAfterRound() {
-            isRoundActive = false;
-            document.getElementById('chicken-player').style.display = "none";
-            document.getElementById('main-action-btn').style.backgroundColor = "var(--green-color)";
-            document.getElementById('main-action-btn').innerText = "GO";
-            document.getElementById('profit-text').innerText = "0.00 USD";
-            document.querySelectorAll('.plate-btn').forEach(p => {
-                p.classList.remove('active-target');
-                p.style.opacity = "0.5";
             });
+        }
+
+        function gameOver() {
+            isPlaying = false;
+            clearInterval(gameLoopInterval);
+            
+            chicken.innerText = "💥";
+            multiplierDisplay.innerText = "CRASH! x0.00";
+            multiplierDisplay.style.color = "#f44336";
+            statusMessage.innerHTML = "<span style='color: #f44336;'>Das Huhn wurde erwischt! Einsatz verloren!</span>";
+
+            btnStart.disabled = false;
+            btnStep.disabled = true;
+            btnCashout.disabled = true;
+            currentBet = 0;
+            betDisplay.innerText = 0;
+        }
+
+        function cashOut() {
+            if (!isPlaying) return;
+
+            isPlaying = false;
+            clearInterval(gameLoopInterval);
+
+            let winAmount = Math.floor(currentBet * currentMultiplier);
+            balance += winAmount;
+
+            balanceDisplay.innerText = balance;
+            multiplierDisplay.style.color = "#4caf50";
+            statusMessage.innerHTML = `<span style='color: #4caf50;'>Erfolgreich ausgezahlt! +${winAmount} Punkte!</span>`;
+
+            btnStart.disabled = false;
+            btnStep.disabled = true;
+            btnCashout.disabled = true;
+            currentBet = 0;
+            betDisplay.innerText = 0;
         }
     </script>
 </body>
