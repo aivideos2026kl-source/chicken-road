@@ -403,13 +403,11 @@
             coinElement.style.transition = 'none';
             coinElement.className = 'coin';
             
-            // --- NEUE DYNAMISCHE GLÜCKSSPIEL-LOGIK ---
-            // Wir werfen eine zufällige Prozentzahl zwischen 15% und 25% bei jedem Klick, 
-            // damit es absolut unvorhersehbar ist (mal nach 2, 4, 5 oder 6 Drehs).
+            // Unvorhersehbare Dynamik: Wechselnde Gewinnchance bei jedem Klick
             const dynamicChance = (Math.random() * (0.25 - 0.15)) + 0.15;
             let userWins = Math.random() < dynamicChance; 
             
-            // Absolute Sperre für Gewinne direkt nacheinander!
+            // Blockiert Gewinne direkt nacheinander
             let lastTimeWon = localStorage.getItem('last_spin_won') === 'true';
             if (userWins && lastTimeWon) {
                 userWins = false; 
@@ -420,7 +418,6 @@
                 coinResult = selectedChoice;
                 localStorage.setItem('last_spin_won', 'true');
             } else {
-                // Zeigt optisch sauber immer das falsche Ergebnis, wenn man verliert
                 coinResult = (selectedChoice === 'Kopf') ? 'Zahl' : 'Kopf';
                 localStorage.setItem('last_spin_won', 'false');
             }
@@ -439,8 +436,9 @@
                     if (tg && tg.showAlert) tg.showAlert(`🎉 Richtig getippt! Es ist ${coinResult}. Du gewinnst 2.00 €!`);
                     else alert(`🎉 Richtig getippt! Es ist ${coinResult}. Du gewinnst 2.00 €!`);
                 } else {
-                    if (tg && tg.showAlert) tg.showAlert(`❌ Leider falsch getippt! Die Münze zeigt ${coinResult}.`);
-                    else alert(`❌ Leider falsch getippt! Die Münze zeigt ${coinResult}.`);
+                    // Neutrale Anzeige, die immer logisch korrekt ist
+                    if (tg && tg.showAlert) tg.showAlert(`❌ Schade! Du hast leider nicht gewonnen. Ergebnis: ${coinResult}.`);
+                    else alert(`❌ Schade! Du hast leider nicht gewonnen. Ergebnis: ${coinResult}.`);
                 }
                 updateUI();
             }, 1550);
