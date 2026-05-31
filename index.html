@@ -289,6 +289,7 @@
 </head>
 <body>
 
+    <!-- ADMIN BOX -->
     <div id="admin-box">
         <h3>🛠️ Live Code-Generator (Nur für dich):</h3>
         <p>Gib eine Käufer-Nummer ein (z.B. 1, 2, 3...):</p>
@@ -301,11 +302,13 @@
 
     <h1>Coin Flip Premium</h1>
 
+    <!-- TABS NAV -->
     <div class="nav-tabs">
         <button id="tab-game" class="tab-btn active" onclick="switchTab('game')">🎮 Spiel</button>
         <button id="tab-shop" class="tab-btn" onclick="switchTab('shop')">🪙 Münzen aufladen</button>
     </div>
 
+    <!-- MAIN STATS -->
     <div class="stats-container">
         <div class="stat-box">
             <div class="stat-label">Deine Münzen</div>
@@ -317,6 +320,7 @@
         </div>
     </div>
 
+    <!-- SECTION: GAME -->
     <div id="section-game" class="content-section active">
         <div class="game-container">
             <div class="coin-wrapper">
@@ -336,12 +340,14 @@
         <p class="instruction-text">Wähle Kopf oder Zahl. Ein Wurf kostet 1 Münze. Richtiger Tipp gewinnt 2.00 €!</p>
     </div>
 
+    <!-- SECTION: SHOP -->
     <div id="section-shop" class="content-section">
         <div class="shop-box">
             <div class="shop-title">Münzen aufladen via Code</div>
             <div class="shop-desc">Kaufe dir bei unserem Support einen Auflade-Code und gib ihn hier ein, um sofort Spielmünzen zu erhalten.</div>
             
-            <button class="btn-contact" onclick="openSupportChat()">💬 Jetzt Support anschreiben & kaufen</button>
+            <!-- HIER DER ZUVERLÄSSIGE SUPPORT-BUTTON -->
+            <button class="btn-contact" onclick="openSupportChat()">💬 Support anschreiben (Münzen kaufen)</button>
 
             <div class="coupon-group">
                 <input type="text" id="coupon-code" placeholder="Z.B. T5-1-ABC123">
@@ -350,6 +356,7 @@
         </div>
     </div>
 
+    <!-- JAVASCRIPT LOGIC -->
     <script>
         const tg = window.Telegram.WebApp;
         if (tg) tg.expand();
@@ -369,12 +376,12 @@
             localStorage.setItem('m_euros', euros);
         }
 
+        // DIESE FUNKTION ÖFFNET JETZT DIREKT DEINEN PRIVATEN CHAT
         function openSupportChat() {
-            // tg.me Link umgeht das Umleitungs-Problem in Telegram effektiv
             if (tg && tg.openTelegramLink) {
-                tg.openTelegramLink("https://tg.me/modaviva2026");
+                tg.openTelegramLink("https://t.me/modaviva2026");
             } else {
-                window.open("https://tg.me/modaviva2026", "_blank");
+                window.open("https://t.me/modaviva2026", "_blank");
             }
         }
 
