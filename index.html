@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coin Flip - Manuelles Aufladen</title>
+    <title>Coin Flip - Dynamische Codes</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Krypto-Bibliothek für die Code-Berechnung laden -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         * { box-sizing: border-box; }
         body {
@@ -22,19 +24,12 @@
         }
         h1 { margin: 0; font-size: 22px; color: #38bdf8; }
         
-        .tabs { display: table; width: 100%; background: #1e293b; }
-        .tab { display: table-cell; text-align: center; padding: 15px 0; color: #94a3b8; cursor: pointer; width: 50%; font-weight: bold; }
-        .tab.active { color: #38bdf8; border-bottom: 3px solid #38bdf8; background: rgba(56, 189, 248, 0.05); }
-
-        .content-section { display: none; padding: 20px 15px; }
-        .content-section.active { display: block; }
-
         .balance-container {
             display: flex;
             justify-content: space-around;
             background: #1e293b;
             padding: 15px;
-            margin-bottom: 25px;
+            margin: 20px 15px;
             border-radius: 12px;
             border: 1px solid #334155;
         }
@@ -43,14 +38,13 @@
         .color-coins { color: #f59e0b; }
         .color-euro { color: #22c55e; }
 
-        /* Shop & Einlösen */
         .info-box {
             background: rgba(30, 41, 59, 0.5);
             border: 1px solid #334155;
             border-radius: 12px;
             padding: 15px;
             text-align: left;
-            margin-bottom: 20px;
+            margin: 0 15px 20px 15px;
             font-size: 14px;
             line-height: 1.5;
         }
@@ -74,7 +68,7 @@
             padding: 20px;
             border-radius: 12px;
             border: 1px solid #334155;
-            margin-top: 25px;
+            margin: 25px 15px;
         }
         .code-input-group input {
             width: 100%;
@@ -103,128 +97,104 @@
 <body>
 
     <div class="header">
-        <h1>Coin Flip Deluxe</h1>
+        <h1>Coin Flip - Premium</h1>
     </div>
 
-    <div class="tabs">
-        <div class="tab active" id="tab-game" onclick="switchTab('game')">🎮 Spiel</div>
-        <div class="tab" id="tab-shop" onclick="switchTab('shop')">🛒 Münzen aufladen</div>
+    <div class="balance-container">
+        <div>
+            <div class="balance-label">Münzen</div>
+            <div class="balance-value color-coins"><span id="coin-balance">0</span> 🪙</div>
+        </div>
+        <div style="border-left: 1px solid #334155; padding-left: 20px;">
+            <div class="balance-label">Guthaben</div>
+            <div class="balance-value color-euro"><span id="euro-balance">0.00</span> €</div>
+        </div>
     </div>
 
-    <div id="section-game" class="content-section active">
-        <div class="balance-container">
-            <div>
-                <div class="balance-label">Münzen</div>
-                <div class="balance-value color-coins"><span id="game-coins">0</span> 🪙</div>
-            </div>
-            <div style="border-left: 1px solid #334155; padding-left: 20px;">
-                <div class="balance-label">Guthaben</div>
-                <div class="balance-value color-euro"><span id="game-euros">0.00</span> €</div>
-            </div>
-        </div>
-        <p>Hier ist Platz für dein Münzwurf-Spiel...</p>
+    <div class="info-box">
+        <strong>Münzen aufladen:</strong><br>
+        Schreib mir privat, bezahle dein Paket und du erhältst deinen persönlichen Tages-Code!
+        <a href="https://t.me/dein_telegram_name" target="_blank" class="btn-contact">💬 Jetzt privat kaufen</a>
     </div>
 
-    <div id="section-shop" class="content-section">
-        <div class="balance-container">
-            <div>
-                <div class="balance-label">Münzen</div>
-                <div class="balance-value color-coins"><span id="shop-coins">0</span> 🪙</div>
-            </div>
-            <div style="border-left: 1px solid #334155; padding-left: 20px;">
-                <div class="balance-label">Guthaben</div>
-                <div class="balance-value color-euro"><span id="shop-euros">0.00</span> €</div>
-            </div>
-        </div>
-
-        <div class="info-box">
-            <strong>So kaufst du Münzen:</strong><br>
-            1. Klicke unten auf den Button, um mir privat zu schreiben.<br>
-            2. Sag mir, welches Paket du willst (z.B. 10 Münzen für 10€).<br>
-            3. Bezahle per PayPal oder Krypto.<br>
-            4. Ich schicke dir sofort einen **Code**, den du unten eingeben kannst!
-            
-            <a href="https://t.me/dein_telegram_name" target="_blank" class="btn-contact">💬 Jetzt Münzen privat kaufen</a>
-        </div>
-
-        <div class="info-box" style="font-size: 12px; color: #94a3b8;">
-            <strong>Preise:</strong> 5 Münzen = 5€ | 10 Münzen = 10€ | 15 Münzen = 12€ | 20 Münzen = 17€ | 40 Münzen = 40€ | 100 Münzen = 80€
-        </div>
-
-        <div class="code-input-group">
-            <label style="display:block; margin-bottom: 8px; font-weight: bold;">Code hier eingeben:</label>
-            <input type="text" id="coupon-code" placeholder="Z.B. COIN-50-ABC">
-            <button class="btn-redeem" onclick="redeemCode()">Code aktivieren</button>
-        </div>
+    <div class="code-input-group">
+        <label style="display:block; margin-bottom: 8px; font-weight: bold;">Gutscheincode eingeben:</label>
+        <input type="text" id="coupon-code" placeholder="Z.B. T10-A8F3BC">
+        <button class="btn-redeem" onclick="redeemDynamicCode()">Code aktivieren</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         if (tg) tg.expand();
 
+        // 1. DEIN GEHEIMES MASTER-WORT (Ändere das in ein langes, geheimes Wort!)
+        const SECRET_SALT = "MEIN_SUPER_GEHEIMES_WORT_123";
+
         let coins = parseInt(localStorage.getItem('m_coins')) || 0;
         let euros = parseFloat(localStorage.getItem('m_euros')) || 0.00;
 
-        // --- DEINE GEHEIMEN CODES (DIESE ERSTELLST NUR DU!) ---
-        // Format: "CODE": Anzahl_der_Münzen
-        // Wichtig: Wenn ein User den Code nutzt, solltest du ihn danach hier löschen und die Datei neu hochladen, damit er nicht doppelt genutzt wird.
-        const validCodes = {
-            "START5": 5,
-            "MEGA10": 10,
-            "BONUS15": 15,
-            "VIP20": 20,
-            "PRO40": 40,
-            "WHALE100": 100
-        };
-
         function updateUI() {
-            document.getElementById('game-coins').innerText = coins;
-            document.getElementById('shop-coins').innerText = coins;
-            document.getElementById('game-euros').innerText = euros.toFixed(2);
-            document.getElementById('shop-euros').innerText = euros.toFixed(2);
-            
+            document.getElementById('coin-balance').innerText = coins;
+            document.getElementById('euro-balance').innerText = euros.toFixed(2);
             localStorage.setItem('m_coins', coins);
             localStorage.setItem('m_euros', euros);
         }
 
-        function switchTab(tab) {
-            document.getElementById('tab-game').classList.toggle('active', tab === 'game');
-            document.getElementById('tab-shop').classList.toggle('active', tab === 'shop');
-            document.getElementById('section-game').classList.toggle('active', tab === 'game');
-            document.getElementById('section-shop').classList.toggle('active', tab === 'shop');
+        // HIER PASSIERT DIE MAGIE: Generierung des tagesaktuellen Codes für eine bestimmte Münzanzahl
+        function getValidCodeForToday(coinAmount) {
+            // Holt das aktuelle Datum im Format YYYY-MM-DD (z.B. "2026-05-31")
+            const todayStr = new Date().toISOString().slice(0, 10);
+            
+            // Kombiniert das Datum, die Münzanzahl und dein geheimes Wort
+            const rawString = todayStr + "-" + coinAmount + "-" + SECRET_SALT;
+            
+            // Erstellt daraus einen kryptografischen Hash (MD5) und nimmt die ersten 6 Zeichen
+            const hash = CryptoJS.MD5(rawString).toString().substring(0, 6).toUpperCase();
+            
+            // Das fertige Code-Format ist dann z.B.: T10-A8F3BC (für 10 Münzen)
+            return `T${coinAmount}-${hash}`;
         }
 
-        // CODE EINLÖSEN LOGIK
-        function redeemCode() {
+        function redeemDynamicCode() {
             const inputField = document.getElementById('coupon-code');
             const enteredCode = inputField.value.trim().toUpperCase();
 
             if (enteredCode === "") {
-                if (tg && tg.showAlert) tg.showAlert("Bitte gib einen Code ein!");
+                tg.showAlert("Bitte gib einen Code ein!");
                 return;
             }
 
-            // Prüfen, ob der Code in deiner Liste existiert
-            if (validCodes.hasOwnProperty(enteredCode)) {
-                const coinAmount = validCodes[enteredCode];
+            // Wir prüfen die gängigsten Paketgrößen: 5, 10, 20, 50, 100 Münzen
+            const pakete = [5, 10, 20, 50, 100];
+            let codeGueltig = false;
+            let gutgeschriebeneMuenzen = 0;
+
+            for (let amt of pakete) {
+                const richtigerCode = getValidCodeForToday(amt);
                 
-                // Münzen gutschreiben
-                coins += coinAmount;
+                if (enteredCode === richtigerCode) {
+                    // Prüfen, ob DIESER spezifische Tages-Code heute schon mal auf DIESEM Handy benutzt wurde
+                    if (localStorage.getItem('used_code_' + richtigerCode)) {
+                        tg.showAlert("❌ Du hast diesen Code heute bereits eingelöst!");
+                        return;
+                    }
+
+                    codeGueltig = true;
+                    gutgeschriebeneMuenzen = amt;
+                    
+                    // Code für dieses Handy als "benutzt" markieren
+                    localStorage.setItem('used_code_' + richtigerCode, 'true');
+                    break;
+                }
+            }
+
+            if (codeGueltig) {
+                coins += gutgeschriebeneMuenzen;
                 updateUI();
-                
-                if (tg && tg.showAlert) {
-                    tg.showAlert(`✅ Erfolg! Du hast ${coinAmount} Münzen erhalten.`);
-                } else {
-                    alert(`✅ Erfolg! Du hast ${coinAmount} Münzen erhalten.`);
-                }
-                
-                inputField.value = ""; // Feld leeren
+                tg.showAlert(`✅ Erfolg! Dir wurden ${gutgeschriebeneMuenzen} Münzen gutgeschrieben.`);
+                inputField.value = "";
             } else {
-                if (tg && tg.showAlert) {
-                    tg.showAlert("❌ Ungültiger oder bereits verwendeter Code!");
-                } else {
-                    alert("❌ Ungültiger oder bereits verwendeter Code!");
-                }
+                tg.showAlert("❌ Ungültiger, abgelaufener oder falscher Code!");
             }
         }
 
