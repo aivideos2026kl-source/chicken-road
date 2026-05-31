@@ -40,7 +40,6 @@
         .logo {
             font-weight: bold;
             font-size: 18px;
-            color: #fff;
         }
         .logo span { color: #f39c12; }
 
@@ -51,6 +50,7 @@
             display: flex;
             align-items: center;
             border: 1px solid #444;
+            cursor: pointer;
         }
 
         .balance-box span {
@@ -70,6 +70,48 @@
             background-size: 40px 40px;
         }
 
+        /* LEADERBOARD (NEU!) */
+        .leaderboard-section {
+            width: 90%;
+            max-width: 400px;
+            background-color: #222;
+            margin: 10px 0;
+            padding: 10px 5%;
+            border-radius: 12px;
+            border: 1px solid #333;
+        }
+
+        .leaderboard-title {
+            font-size: 14px;
+            text-transform: uppercase;
+            color: #888;
+            margin-bottom: 8px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .leaderboard-table tr {
+            border-bottom: 1px solid #333;
+        }
+
+        .leaderboard-table tr:last-child {
+            border-bottom: none;
+        }
+
+        .leaderboard-table td {
+            padding: 6px 0;
+        }
+
+        .rank { width: 30px; color: #f39c12; font-weight: bold; }
+        .username { color: #fff; }
+        .score { text-align: right; color: #f1c40f; font-weight: bold; }
+
         /* Steuerungs-Panel unten */
         .control-panel {
             width: 90%;
@@ -77,10 +119,10 @@
             background-color: var(--panel-color);
             border-top-left-radius: 20px;
             border-top-right-radius: 20px;
-            padding: 20px 5%;
+            padding: 15px 5% 25px 5%;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 12px;
         }
 
         .bet-selection {
@@ -109,8 +151,7 @@
             padding: 18px;
             border: none;
             border-radius: 12px;
-            font-size: 18px;
-            font-weight: bold;
+            font-size: 17px;font-weight: bold;
             color: white;
             cursor: pointer;
         }
@@ -118,23 +159,13 @@
         .btn-cashout { background-color: var(--gold-color); }
         .btn-go { background-color: var(--green-color); }
 
-        /* Menüs (Shop, Einstellungen, Wallet) */
-        .nav-menu {
-            display: flex;
-            gap: 10px;
-        }
-        .nav-item {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-        }
+        .nav-menu { display: flex; gap: 10px; }
+        .nav-item { background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
 
         .overlay-menu {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.9);
+            background-color: rgba(0,0,0,0.95);
             display: none;
             flex-direction: column;
             align-items: center;
@@ -145,10 +176,12 @@
 </head>
 <body>
 
+    <!-- Header -->
     <div class="header">
         <div class="logo">CHICKEN<span>2</span>ROAD</div>
         <div style="display: flex; align-items: center; gap: 10px;">
-            <div class="balance-box" onclick="openMenu('shop<div id="user-balance">100</div> <span>🪙</span>
+            <div class="balance-box" onclick="openMenu('shop')">
+                <div id="user-balance">100</div> <span>🪙</span>
             </div>
             <div class="nav-menu">
                 <button class="nav-item" onclick="openMenu('settings')">⚙️</button>
@@ -157,9 +190,32 @@
         </div>
     </div>
 
-    <div id="game-container">
-        </div>
+    <!-- Spielfeld -->
+    <div id="game-container"></div>
 
+    <!-- LEADERBOARD TABELLE (NEU!) -->
+    <div class="leaderboard-section">
+        <div class="leaderboard-title">🏆 TOP GEWINNER</div>
+        <table class="leaderboard-table">
+            <tr>
+                <td class="rank">#1</td>
+                <td class="username">Kurdo_Gamer</td>
+                <td class="score">999.749 🪙</td>
+            </tr>
+            <tr>
+                <td class="rank">#2</td>
+                <td class="username">Ahmet_07</td>
+                <td class="score">452.120 🪙</td>
+            </tr>
+            <tr>
+                <td class="rank">#3</td>
+                <td class="username">CryptoKing</td>
+                <td class="score">120.400 🪙</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Panel unten -->
     <div class="control-panel">
         <div class="bet-selection">
             <button class="bet-btn" onclick="setBet(0.5)">0.5 🪙</button>
@@ -174,29 +230,31 @@
         </div>
     </div>
 
+    <!-- SHOP OVERLAY -->
     <div id="shop-menu" class="overlay-menu">
         <h2>MÜNZ-SHOP</h2>
-        <button onclick="buyCoins(10, 10)">10 Münzen = 10€</button><br>
-        <button onclick="buyCoins(50, 50)">50 Münzen = 50€</button><br>
-        <button onclick="buyCoins(100, 80)">100 Münzen = 80€</button><br>
-        <button onclick="closeMenus()">Schließen</button>
+        <button style="padding:10px; margin:5px; width:200px;" onclick="buyCoins(10, 10)">10 Münzen = 10€</button><br>
+        <button style="padding:10px; margin:5px; width:200px;" onclick="buyCoins(50, 50)">50 Münzen = 50€</button><br>
+        <button style="padding:10px; margin:5px; width:200px;" onclick="buyCoins(100, 80)">100 Münzen = 80€</button><br>
+        <button style="padding:10px; margin:15px;" onclick="closeMenus()">Schließen</button>
     </div>
 
+    <!-- SETTINGS OVERLAY -->
     <div id="settings-menu" class="overlay-menu">
         <h2>SPRACHE / LANGUAGE</h2>
-        <button onclick="setLanguage('de')">Deutsch</button>
-        <button onclick="setLanguage('tr')">Türkçe</button>
-        <button onclick="setLanguage('ar')">العربية</button>
-        <button onclick="setLanguage('en')">English</button>
-        <button onclick="setLanguage('ru')">Русский</button><br>
-        <button onclick="closeMenus()">Schließen</button>
-    </div>
-
+        <button style="padding:10px; margin:5px; width:150px;" onclick="setLanguage('de')">Deutsch</button>
+        <button style="padding:10px; margin:5px; width:150px;" onclick="setLanguage('tr')">Türkçe</button>
+        <button style="padding:10px; margin:5px; width:150px;" onclick="setLanguage('ar')">العربية</button>
+        <button style="padding:10px; margin:5px; width:150px;" onclick="setLanguage('en')">English</button>
+        <button style="padding:10px; margin:5px; width:150px;" onclick="setLanguage('ru')">Русский</button><br>
+        <button style="padding:10px; margin:15px;" onclick="closeMenus()">Schließen</button>
+    </div><!-- WALLET / PAYPAL OVERLAY -->
     <div id="wallet-menu" class="overlay-menu">
         <h2>AUSZAHLUNG / WALLET</h2>
-        <input type="text" id="paypal-email" placeholder="PayPal E-Mail Adresse" style="padding: 10px; width: 80%;"><br>
-        <button onclick="saveWallet()">Speichern & Auszahlen</button><br>
-        <button onclick="closeMenus()">Schließen</button>
+        <p style="color:#aaa; font-size:14px; text-align:center; padding:0 20px;">Gib deine PayPal-E-Mail oder dein Krypto-Wallet für die Gewinnauszahlung ein:</p>
+        <input type="text" id="paypal-email" placeholder="PayPal E-Mail / Wallet Adresse" style="padding: 12px; width: 80%; border-radius:8px; border:none; margin-bottom:15px;"><br>
+        <button style="padding:12px; background-color:var(--green-color); color:white; border:none; border-radius:8px; width:84%; font-weight:bold;" onclick="saveWallet()">Speichern & Auszahlen</button><br>
+        <button style="padding:10px; margin:15px; background:none; border:none; color:#aaa;" onclick="closeMenus()">Schließen</button>
     </div>
 
     <script>
@@ -208,6 +266,14 @@
         let currentProfit = 0;
         let currentStep = 0;
         let gameActive = false;
+
+        // Versuche den echten Namen aus Telegram zu ziehen
+        try {
+            const telegramUser = tg.initDataUnsafe?.user?.username;
+            if(telegramUser) {
+                // Hier könnte man später den Namen dynamisch in die Tabelle eintragen
+            }
+        } catch(e) {}
 
         function openMenu(menuId) {
             closeMenus();
@@ -238,17 +304,17 @@
                 currentProfit = currentBet * 1.98;
                 document.getElementById('win-amount').innerText = currentProfit.toFixed(2) + " USD";
             } else {
-                // Ein Schritt nach vorne gehen (Risiko-Check)
                 currentStep++;
                 let crashChance = Math.random();
-                if (crashChance < 0.25) { // 25% Chance zu verlieren
+                if (crashChance < 0.25) { 
                     alert("BOOM! Verloren!");
                     gameActive = false;
                     currentProfit = 0;
                     document.getElementById('win-amount').innerText = "0.00 USD";
                 } else {
-                    currentProfit += 0.05; // 5 Cent Gewinn pro Schritt dazu
-                    document.getElementById('win-amount').innerText = currentProfit.toFixed(2) + " USD";}
+                    currentProfit += 0.05; 
+                    document.getElementById('win-amount').innerText = currentProfit.toFixed(2) + " USD";
+                }
             }
             tg.HapticFeedback.impactOccurred("medium");
         }
@@ -256,7 +322,6 @@
         function cashOut() {
             if(gameActive && currentProfit > 0) {
                 alert("Erfolgreich ausgezahlt: " + currentProfit.toFixed(2) + " USD");
-                // Hier würde der Gewinn wieder in Münzen oder Guthaben umgerechnet
                 gameActive = false;
                 currentProfit = 0;
                 document.getElementById('win-amount').innerText = "0.00 USD";
@@ -270,7 +335,17 @@
         }
 
         function buyCoins(amount, price) {
-            alert("Du kaufst " + amount + " Münzen für " + price + "€. Hier binden wir als nächstes Telegram Stars ein.");
+            alert("Du kaufst " + amount + " Münzen für " + price + "€.");
+        }
+
+        function saveWallet() {
+            const val = document.getElementById('paypal-email').value;
+            if(val) {
+                alert("Adresse gespeichert: " + val);
+                closeMenus();
+            } else {
+                alert("Bitte gib eine gültige Adresse ein.");
+            }
         }
     </script>
 </body>
