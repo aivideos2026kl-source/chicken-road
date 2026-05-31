@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chicken Road - Präzise Edition</title>
+    <title>Chicken Road - Smooth Version</title>
     <style>
         :root {
             --bg-dark: #0f0b1e;
@@ -42,7 +42,7 @@
             position: relative;
         }
 
-        /* --- NAVIGATION OBERHALB --- */
+        /* --- TOP NAVIGATION --- */
         .top-nav {
             display: flex;
             justify-content: space-between;
@@ -67,7 +67,7 @@
             font-weight: bold;
         }
 
-        /* --- SPIELFELD --- */
+        /* --- GAME VIEW --- */
         .game-view {
             flex: 1;
             position: relative;
@@ -85,7 +85,7 @@
             flex-shrink: 0;
         }
 
-        /* Das Huhn - Langsame, geschmeidige Bewegung eingebaut (0.8 Sekunden) */
+        /* Das Huhn - lineares, absolut ruckelfreies Gleiten */
         .chicken {
             position: absolute;
             left: 30px;
@@ -93,7 +93,7 @@
             transform: translateY(-50%);
             font-size: 2.3rem;
             z-index: 10;
-            transition: left 0.8s ease-in-out, top 0.8s ease-in-out; 
+            transition: left 1.2s linear; /* Konstante, langsame Vorwärtsbewegung */
             pointer-events: none;
         }
 
@@ -143,17 +143,16 @@
             position: relative;
             z-index: 6;
             flex-shrink: 0;
-            transition: border-color 0.3s;
         }
         .gully-tile.active-step {
             border-color: var(--gold);
             box-shadow: 0 0 12px var(--gold);
         }
 
-        /* Verwandlung in Goldmünze */
+        /* Exakte Verwandlung in Goldmünze */
         .gully-tile.safe-coin {
-            background: radial-gradient(circle, #ffee55 0%, #fbc02d 100%);
-            border-color: #fff;
+            background: radial-gradient(circle, #ffee55 0%, #fbc02d 100%) !important;
+            border-color: #fff !important;
         }
         .gully-tile.safe-coin::after {
             content: '🪙';
@@ -166,13 +165,13 @@
             height: 100%;
         }
 
-        /* Autos fahren jetzt absolut schnurgerade von oben nach unten herunter */
+        /* Autos kommen exakt im 90 Grad Winkel schnurgerade von oben nach unten */
         .car-obstacle {
             position: absolute;
             font-size: 2.6rem;
             z-index: 12;
             top: -60px;
-            transition: top 1.8s linear; /* Gleichmäßige, gerade Fahrt nach unten */
+            transition: top 2.0s linear; /* Schöne, langsame Fahrt nach unten */
         }
 
         /* --- CONTROL PANEL --- */
@@ -256,7 +255,6 @@
 
     <div class="app-container">
         
-        <!-- HEADER INTERFACE -->
         <div class="top-nav">
             <div style="font-weight: bold; display: flex; align-items: center; gap: 5px;">
                 <span>🪙</span> <span id="balance-coins">200</span> Test-Münzen
@@ -267,17 +265,15 @@
             </div>
         </div>
 
-        <!-- AREA DER STRASSE -->
         <div class="game-view">
             <div class="farm-side">
-                <div class="chicken" id="player-chicken"> Rooster 🐓 </div>
+                <div class="chicken" id="player-chicken">🐓</div>
             </div>
             <div class="road-side" id="road-scroller">
                 <div class="road-container-scroll" id="tiles-container"></div>
             </div>
         </div>
 
-        <!-- BEDIEUNUNGSPANEL -->
         <div class="control-panel">
             <div class="stats-bar">
                 <div>Kosten: <span class="stat-val">10 Münzen</span></div>
@@ -294,7 +290,6 @@
             </div>
         </div>
 
-        <!-- POPUPS -->
         <div id="shop-overlay" class="overlay-screen">
             <div class="overlay-header">
                 <h3>🛒 Gratis Münzen (0 € Modus)</h3>
@@ -324,8 +319,7 @@
         let earnedMoney = 0.00;
         let betCostInCoins = 10; 
         let minePositions = [];
-        let autoTimer = null;
-        let isMoving = false; // Blockiert Klicks während das Huhn läuft
+        let isMoving = false; 
 
         const multipliers = [1.05, 1.15, 1.25, 1.40, 1.60, 1.90, 2.30, 2.80, 3.50, 5.00];
 
@@ -383,20 +377,18 @@
             earnedMoney = 0.00;
             displayWin.innerText = "0.00";
 
-            // Hindernis-Verteilung
             minePositions = Array(maxSteps).fill(false);
             let randomDanger = Math.floor(Math.random() * 5) + 2; 
             minePositions[randomDanger] = true;
 
             generateRoad();
             chicken.style.left = '30px'; 
-            chicken.style.top = '50%';
             scroller.scrollLeft = 0;
 
             if (gameMode === 'manual') {
                 prepareJumpButton();
             } else {
-                startAutoModeLoop();
+                runAutoStepLoop();
             }
         }
 
@@ -413,27 +405,26 @@
             });
         }
 
-        function executeStep() {
+        function executeStep(onAnimationComplete) {
             if (!isGameRunning || isMoving) return;
 
-            isMoving = true; // Verhindert Spamming während der langsamen Bewegung
+            isMoving = true; 
             const targetGully = document.getElementById(`step-${currentStep}`);
             
-            // Mathematisch exakte Zentrierung auf dem Münz-Gully
+            // Zentrierung exakt berechnen
             const containerLeft = tilesContainer.getBoundingClientRect().left;
             const gullyLeft = targetGully.getBoundingClientRect().left;
             const targetX = (gullyLeft - containerLeft) + (targetGully.offsetWidth / 2) - (chicken.offsetWidth / 2);
             
-            // Huhn läuft los
+            // Huhn setzt sich flüssig und langsam in Bewegung
             chicken.style.left = `${targetX}px`;
 
-            // Warten bis das Huhn die langsame Bewegung (0.8s) beendet hat
+            // Warten bis die 1.2 Sekunden Lauf-Animation exakt vorbei ist
             setTimeout(() => {
                 if (minePositions[currentStep]) {
                     isGameRunning = false;
-                    if (autoTimer) clearInterval(autoTimer);
 
-                    // Auto kommt exakt schnurgerade von oben nach unten gefahren
+                    // Auto kommt kerzengerade von oben herab gerauscht
                     const car = document.createElement('div');
                     car.className = 'car-obstacle';
                     car.innerText = '🚘';
@@ -443,12 +434,12 @@
                     setTimeout(() => { car.style.top = '35%'; }, 50);
 
                     setTimeout(() => {
-                        alert("💥 Crash! Ein Auto kam von oben.");
+                        alert("💥 Crash! Ein Auto hat das Huhn erwischt.");
                         resetToStart();
-                    }, 1500);
+                    }, 1600);
 
                 } else {
-                    // Punktlandung auf der Münze vollendet
+                    // Huhn steht genau drauf -> JETZT wird es zur Goldmünze
                     targetGully.classList.remove('active-step');
                     targetGully.classList.add('safe-coin');
 
@@ -462,8 +453,7 @@
 
                     if (currentStep >= maxSteps) {
                         isGameRunning = false;
-                        if (autoTimer) clearInterval(autoTimer);
-                        alert(`🎉 Gewonnen! Du hast ${earnedMoney.toFixed(2)} € erreicht!`);
+                        alert(`🎉 Gewonnen! Du hast die Straße geschafft und ${earnedMoney.toFixed(2)} € verdient!`);
                         resetToStart();
                     } else {
                         if (gameMode === 'manual') {
@@ -472,46 +462,53 @@
                                 <button class="action-button btn-green-main" onclick="executeStep()" style="margin-bottom:5px;">Weiter Springen</button>
                                 <button class="action-button" onclick="cashOutEarly()" style="background:#d32f2f;">Sichern (${earnedMoney.toFixed(2)}€)</button>
                             `;
+                        } else if (onAnimationComplete) {
+                            // Gibt dem Auto-Modus das Signal, dass gelandet wurde
+                            onAnimationComplete();
                         }
                     }
                 }
-            }, 800); // Entspricht exakt der Animationsdauer des Huhns
+            }, 1200); // Wartet exakt die Dauer des langsamen Laufs ab
         }
 
-        function startAutoModeLoop() {
+        function runAutoStepLoop() {
+            if (!isGameRunning) return;
+
             document.getElementById('action-area').innerHTML = `
                 <button id="btn-action" class="action-button" style="background:#555;" disabled>Auto-Modus läuft...</button>
             `;
-            
-            autoTimer = setInterval(() => {
-                if (!isGameRunning) {
-                    clearInterval(autoTimer);
+
+            // Rekursive Funktion wartet den Schritt sauber ab, bevor der nächste geplant wird
+            function nextAutoAction() {
+                if (!isGameRunning) return;
+
+                // KI entscheidet manchmal strategisch aufzuhören
+                if (currentStep >= 4 && Math.random() > 0.75) {
+                    cashOutEarly();
                     return;
                 }
-                
-                if (!isMoving) {
-                    executeStep();
-                }
 
-                // Auto-Modus stoppt manchmal strategisch um abzuheben
-                if (isGameRunning && currentStep >= 4 && Math.random() > 0.75) {
-                    clearInterval(autoTimer);
-                    cashOutEarly();
-                }
-            }, 2200); // Genug Zeitfenster für den langsamen Sprung + Pause
+                // Führt den Schritt aus und wartet auf die Fertigstellungsmeldung
+                setTimeout(() => {
+                    executeStep(() => {
+                        // Wird erst aufgerufen, wenn das Huhn fertig gelaufen ist!
+                        nextAutoAction();
+                    });
+                }, 600); // Kurze Pause auf der Münze vor dem nächsten Sprung
+            }
+
+            nextAutoAction();
         }
 
         function cashOutEarly() {
             isGameRunning = false;
-            if (autoTimer) clearInterval(autoTimer);
-            alert(`Gesichert! Du beendest die Runde mit ${earnedMoney.toFixed(2)} €.`);
+            alert(`Runde beendet! Du nimmst ${earnedMoney.toFixed(2)} € mit.`);
             resetToStart();
         }
 
         function resetToStart() {
             isGameRunning = false;
             isMoving = false;
-            if (autoTimer) clearInterval(autoTimer);
             document.getElementById('action-area').innerHTML = `
                 <button id="btn-action" class="action-button btn-green-main" onclick="startRound()">Runde starten</button>
             `;
